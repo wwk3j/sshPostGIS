@@ -60,6 +60,7 @@ def explodeGeo(featLayer):
 def geoValidate(featLayer):
     rows = arcpy.SearchCursor(featLayer)
     row = rows.next()
+    exList = []
     #fields = arcpy.ListFields(layer, "Shape", "Shape_Area", "Shape_Length")
     #refer to SearchCursor page because cursor cannot use getValue
     while row:
@@ -67,15 +68,24 @@ def geoValidate(featLayer):
         shpType = row.getValue("Shape")
         polyArea = row.getValue("Shape_Area")
         lineLength = row.getValue("Shape_Length")
+        #latVal = row.getValue("LATITUDE")
+        #lonVal = row.getValue("LONGITUDE")
         if shpType == "Polygon":
-            if polyArea == 0: 
-                raise Exception('area is zero')
+            if polyArea == 0:
+                exList.append('area is zero')
                 #arcpy.DeleteRows_management(polyArea)
         elif shpType == "Polyline":
             if lineLength == 0:
-                raise Exception('length is zero')
+                exList.append('length is zero') 
                 #arcpy.DeleteRows_management(linelength)
+        elif shpType == "Point":
+            if latVal > 180 or latVal < -180:
+                exList.append('non-applicable latitude value, exceeds 90 degrees either pole') 
+            elif lonVal > 90 or lonVal < -90:
+                exList.append('non-applicable longitude value, exceeds 180 degrees either pole')           
         row = rows.next()
+    if exList:
+        raise Exception('; '.join(exList))
     return featLayer
     
     
@@ -94,6 +104,7 @@ else:
     #may need to switch these layer and featLayer names
     layer = explodeGeo(featLayer)
     arcpy.AddMessage('C')
+   
     
 # TODO: This always gets run. Delete feature here, maybe.
 
