@@ -1,12 +1,12 @@
 #testing a python SSH module
 from collections import namedtuple
-import sys, arcpy, psycopg2, psycopg2.extensions, urllib2, geoserver, random, re, pprint
+import sys, arcpy, psycopg2, psycopg2.extensions, urllib2, geoserver, random, re, pprint 
 from contextlib import closing, contextmanager
 import time
 
 run = int(time.time())
 
-geoType = ""
+#geoType = ""
 
 BoundingBox = namedtuple('BoundingBox', ['xmin', 'ymin', 'xmax', 'ymax'])
 
@@ -104,7 +104,7 @@ def create_postgis_layer(
 
     with closing(psycopg2.connect(**db_params)) as cxn:
         attributes = load_attributes(cxn, name)
-
+        arcpy.AddMessage(repr(attributes))
         for attr in attributes:
             if attr['is_geom']:
                 bounds = get_bounding_box(cxn, name, attr['name'])
@@ -122,7 +122,6 @@ def create_postgis_layer(
             )
 
 #---------------------------------------------------------USE MODULES ABOVE WITH THE CXN OBJECT-----------------------------------------------------------------
-
 def find_new_layer(layer_name):
     base_name = layer_name
     n = 0
@@ -143,6 +142,8 @@ exists or not.
 """
     with closing(cxn.cursor()) as c:
         c.execute('SELECT COUNT(*) FROM pg_database WHERE datname=%s;', [db_name])
+        #c.execute('select %s from pg_tables where schemaname='public';', db_name)
+        #if 
         (count,) = c.fetchone()
         return count > 0
 
@@ -225,13 +226,13 @@ else:
     
     layer = explodeGeo(featLayer)
     spatialRef = arcpy.Describe(layer).spatialReference
-    # use this for the nativeCRS xml
+    # use this for the native_crs xml
     # first, figure out exactly which properties to use. 
-    nativeCRS = spatialRef.exportToString()
-    arcpy.AddMessage(nativeCRS)
-    if ";" in nativeCRS:
-        nativeCRS, leftover = nativeCRS.split(";", 1)
-    arcpy.AddMessage(nativeCRS)
+    native_crs = spatialRef.exportToString()
+    arcpy.AddMessage(native_crs)
+    if ";" in native_crs:
+        native_crs, leftover = native_crs.split(";", 1)
+    arcpy.AddMessage(native_crs)
     desc = arcpy.Describe(layer)
     ext = desc.extent
     arcpy.AddMessage(', '.join(dir(ext)))
@@ -278,20 +279,20 @@ try:
         passwd="vagrant",
         dbtype="postgis")
     cat.save(datastore)
-    global geoType
-    g = arcpy.Geometry()
-    geometryList = arcpy.CopyFeatures_management(featLayer, g)
-    for geometry in geometryList:
-        if geometry.type == "polygon":
-            geoType = 'com.vividsolutions.jts.geom.Polygon'
-        elif geometry.type == "polyline":
-            geoType = 'com.vividsolutions.jts.geom.LineString'
-        elif geometry.type == "multipoint" or geometry.type == "point":
-            geoType = 'com.vividsolutions.jts.geom.Point'
+    #global geoType
+    #g = arcpy.Geometry()
+    #geometryList = arcpy.CopyFeatures_management(featLayer, g)
+    #for geometry in geometryList:
+     #   if geometry.type == "polygon":
+      #      geoType = 'com.vividsolutions.jts.geom.Polygon'
+       # elif geometry.type == "polyline":
+        #    geoType = 'com.vividsolutions.jts.geom.LineString'
+        #elif geometry.type == "multipoint" or geometry.type == "point":
+         #   geoType = 'com.vividsolutions.jts.geom.Point'
     arcpy.AddMessage(arcpy.__file__)
     arcpy.AddMessage(sys.version)
-    arcpy.AddMessage(geoType)
-    attributes = {'the_geom': geoType, 'description': 'java.lang.String', 'timestamp': 'java.util.Date'}
+    #arcpy.AddMessage(geoType)
+    #attributes = {'the_geom': geoType, 'description': 'java.lang.String', 'timestamp': 'java.util.Date'}
     nativeName = "dataType1"
     layerTitle = "Lyr3"
     # arcpy.AddMessage('<%s> <%s> <%s>' % (cat.service_url, wspace, name))
@@ -305,19 +306,44 @@ try:
         password = 'vagrant', 
         )
     arcpy.AddMessage("using alternate version of create postgis layer here")
-    create_postgis_layer(cat, wsName, datastore, lyname, spaRef, nativeCRS, db_params, log)
-    #cat.create_postgres_layer(wsName, name, lyname, nativeName, layerTitle, spaRef, attributes, XMin, YMin, XMax, YMax, spaRef, nativeCRS,
+    #cat.create_postgres_layer(wsName, name, lyname, nativeName, layerTitle, spaRef, attributes, XMin, YMin, XMax, YMax, spaRef, native_crs,
                              # arcpy.AddMessage)
     # arcpy.AddMessage('%s: <%s>\n%r\n\n%s' % debug)
+    qe_params = {
+        'dbname' : '%dbname,',
+        'server' : '%server,',
+        'portnum' : '%portnum,',
+        'usrName' : '%usrName,',
+        'passWord' : '%passWord,',
+        }
+    
+    arcpy.CheckOutExtension("DataInteroperability")
     try:
-        arcpy.QuickExport_interop(layer, 'POSTGIS,%s,"RUNTIME_MACROS,""HOST,%s,PORT,%d,USER_NAME,%s,PASSWORD,%s,GENERIC_GEOMETRY,no,\
-        LOWERCASE_ATTRIBUTE_NAMES,Yes"",META_MACROS,""DestHOST,%s,DestPORT,%d,DestUSER_NAME,%s,DestPASSWORD,%s,DestGENERIC_GEOMETRY,no, \
-        DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false"' %(dbname,(server),(portnum),(usrName),(passWord),(server),(portnum),(usrName),(passWord)))
+        params = (
+            'POSTGIS,%s,"RUNTIME_MACROS,""HOST,%s,PORT,%d,USER_NAME,%s,PASSWORD,%s,GENERIC_GEOMETRY,no,'
+            'LOWERCASE_ATTRIBUTE_NAMES,Yes"",META_MACROS,""DestHOST,%s,DestPORT,%d,DestUSER_NAME,%s,DestPASSWORD,%s,DestGENERIC_GEOMETRY,no,'
+            'DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false"' %
+                (dbname, server , portnum, usrName, passWord, server, portnum, usrName, passWord)
+            )
+        #QuickExport: ne_10m_populated_places_singlepart_153, 'POSTGIS,mar082012_3,"RUNTIME_MACROS,""HOST,localhost,PORT,5432,USER_NAME,vagrant,PASSWORD,vagrant,GENERIC_GEOMETRY,no,        LOWERCASE_ATTRIBUTE_NAMES,Yes"",META_MACROS,""DestHOST,localhost,DestPORT,5432,DestUSER_NAME,vagrant,DestPASSWORD,vagrant,DestGENERIC_GEOMETRY,no,         DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false"'
+        #arcpy.QuickExport_interop(layer, 'POSTGIS,' + dbname + "RUNTIME_MACROS,""HOST," + server + "PORT," + unicode(portnum) + "USER_NAME," + usrName + "PASSWORD," + passWord + "GENERIC_GEOMETRY,no, \
+        #LOWERCASE_ATTRIBUTE_NAMES,Yes,""META_MACROS,""DestHOST," + server + "DestPORT," + unicode(portnum) + "DestUSER_NAME," + usrName + "DestPASSWORD," + passWord + "DestGENERIC_GEOMETRY,no, \
+        #DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false" %(dbname,(server),(portnum),(usrName),(passWord),(server),(portnum),(usrName),(passWord)))
+        arcpy.AddMessage('QuickExport: %s, \'%s\'' % (layer, params))
+        #consider getting rid of the escape chars between the string params
+        arcpy.SetSeverityLevel(2)
+        print arcpy.GetSeverityLevel()
+        output = arcpy.QuickExport_interop(layer, params)
     except arcpy.ExecuteWarning, warning:
         arcpy.AddMessage('QuickExport warning: %s' % (warning,))
-    except:
-        print arcpy.AddMessage('QuickExport Parameters invalid')
-        raise Exception('whatever')
+    finally:
+        print arcpy.GetSeverityLevel()
+        arcpy.GetMessages()
+        arcpy.AddMessage('OUT = ' + repr(output))
+    #except:
+     #   print arcpy.AddMessage('QuickExport Parameters invalid')
+      #  raise Exception('whatever')
+    create_postgis_layer(cat, wspace, datastore, lyname, spaRef, native_crs, db_params, log)
 except:
     import traceback
     tb = traceback.format_exc()
