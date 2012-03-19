@@ -1,14 +1,35 @@
-#testing a python SSH module
-from collections import namedtuple
-import sys, arcpy, psycopg2, psycopg2.extensions, urllib2, geoserver, random, re, pprint
-from contextlib import closing, contextmanager
-import time
 
-run = int(time.time())
+
+# This migrates data from ArcGIS to PostGIS/Geoserver. The process follows
+# these steps (see export_layer):
+#
+# 1. Validate and massage the input data;
+# 2. Create the appropriate objects in Geoserver;
+# 3. Create the PostGIS database;
+# 4. Export the data from ArcGIS into PostGIS using the QuickExport tool;
+# 5. Create the PostGIS layer in Geoserver.
+
+
+from collections import namedtuple
+from contextlib import closing
+import re
+import time
+import traceback
+
+import arcpy
+from geoserver.catalog import Catalog
+import psycopg2, psycopg2.extensions
+
+
+RUN = str(int(time.time()))
 
 #geoType = ""
 
-BoundingBox = namedtuple('BoundingBox', ['xmin', 'ymin', 'xmax', 'ymax'])
+BoundingBox   = namedtuple('BoundingBox', 'xmin ymin xmax ymax')
+DbInfo        = namedtuple('DbInfo', 'host port database user password')
+GeoserverInfo = namedtuple('GeoserverInfo', 'base_url user password')
+DataInfo      = namedtuple('DataInfo', 'workspace namespace')
+
 
 ATTR_TYPES = {
         'bpchar'       : 'java.lang.String',
@@ -35,8 +56,16 @@ reEXTENT = re.compile(r'''
     re.VERBOSE,
     )
 
-def log(msg):
-    print msg
+
+def log(*msg):
+    """Print something(s) to the screen. """
+    print ' '.join( str(m) for m in msg )
+
+
+def arcpy_log(*msg):
+    """Print something(s) as an arcpy message. """
+    arcpy.AddMessage(' '.join( str(m) for m in msg ))
+
 
 def pg_to_attribute(c, row):
     """\
@@ -49,13 +78,15 @@ def pg_to_attribute(c, row):
     is_geom = False
     attr_type = ATTR_TYPES.get(type_name)
     if attr_type is None:
-        c.execute('SELECT DISTINCT GeometryType("%s") FROM "%s";' % (
-                    col_name, table_name))
+        c.execute(
+                'SELECT DISTINCT GeometryType("%s") FROM "%s";' % (
+                    col_name, table_name,
+                    )
+                )
         # Since there should only be one geomtry type, only take the first one.
         attr_type = ATTR_TYPES.get(c.fetchone()[0])
         is_geom   = True
     return {
-        #may have to fix this 'name' part
             'name'     : col_name,
             'nillable' : nillable,
             'binding'  : attr_type,
@@ -96,15 +127,15 @@ def get_bounding_box(cxn, table_name, col_name):
 
         return bounding
 
+
 def create_postgis_layer(
-        cat, wspace, dstore, name, srs, native_crs, db_params, log
+        cat, wspace, dstore, name, srs, native_crs, db_info, log
         ):
     """This creates and returns a new layer. """
     log('create_postgis_layer')
 
-    with closing(psycopg2.connect(**db_params)) as cxn:
+    with closing(psycopg2.connect(**db_info._asdict())) as cxn:
         attributes = load_attributes(cxn, name)
-        arcpy.AddMessage(repr(attributes))
         for attr in attributes:
             if attr['is_geom']:
                 bounds = get_bounding_box(cxn, name, attr['name'])
@@ -121,8 +152,9 @@ def create_postgis_layer(
             srs, native_crs, log
             )
 
-#---------------------------------------------------------USE MODULES ABOVE WITH THE CXN OBJECT-----------------------------------------------------------------
+
 def find_new_layer(layer_name):
+    """This find a layer name that doesn't exist. """
     base_name = layer_name
     n = 0
     while arcpy.Exists(layer_name):
@@ -130,69 +162,75 @@ def find_new_layer(layer_name):
         layer_name = base_name + '_' + str(n)
     return layer_name
 
-def create_new_ds_name(name):
-    base_name = name
-    name = base_name + '_' + str(run)
-    return name
+
+def create_run_name(name):
+    """This returns a name with the run ID appended. """
+    return name + '_' + RUN
+
 
 def db_exists(cxn, db_name):
     """\
-This takes a connection to a Postgres object and db name and tests whether it
-exists or not.
-"""
+    This takes a connection to a Postgres object and db name and tests whether it
+    exists or not.
+    """
     with closing(cxn.cursor()) as c:
-        c.execute('SELECT COUNT(*) FROM pg_database WHERE datname=%s;', [db_name])
-        #c.execute('select %s from pg_tables where schemaname='public';', db_name)
-        #if
+        c.execute('SELECT COUNT(*) FROM pg_database WHERE datname=%s;',
+                  [db_name])
         (count,) = c.fetchone()
         return count > 0
 
-def createConObj():
+
+def createConnObj(db_info):
+    """This creates a PostGIS connection. """
     try:
-        connxion = psycopg2.connect(host=server, database='postgres', user=usrName, port=portnum, password=passWord)
+        connxion = psycopg2.connect(**db_info._asdict())
     except psycopg2.InterfaceError:
-        arcpy.AddMessage("unable to connect to database")
-        sys.exit(1)
+        raise SystemExit("unable to connect to database")
     return connxion
 
-def createCurObj(connection):
-    localDbn = dbname
-    cur = connection.cursor()
-    try:
-        connection.autocommit = True
-        arcpy.AddMessage('localDbn=%r\n' % (localDbn,))
-        arcpy.AddMessage('db_exists => %r\n' % (db_exists(connection, localDbn),))
-        arcpy.AddMessage('post db-exists \n')
-        if not(db_exists(connection, localDbn)):
-            cur.execute('CREATE DATABASE %s TEMPLATE geodb CONNECTION LIMIT 2' %(localDbn))
-    except psycopg2.extensions.QueryCanceledError:
-        print "timed out"
-        sys.exit(1)
-    cur.close()
-    connection.close()
+
+def createNewDb(connection, localDbn):
+    """This creates a new database. """
+    with closing(connection.cursor()) as cur:
+        try:
+            connection.autocommit = True
+            if not(db_exists(connection, localDbn)):
+                cur.execute('CREATE DATABASE %s TEMPLATE geodb CONNECTION LIMIT 2' % (localDbn,))
+        except psycopg2.extensions.QueryCanceledError:
+            raise SystemExit('postgis connection timed out')
+
 
 def explodeGeo(featLayer):
+    """This actually implodes a multi-part layer into a single-part layer. """
     if not featLayer.isFeatureLayer:
-        print "not feature layer, please input feature layer."
-        sys.exit(1)
-    else:
-        layer = find_new_layer(featLayer.name + '_singlepart')
-        arcpy.MultipartToSinglepart_management(featLayer, layer)
+        raise SystemExit("not feature layer, please input feature layer.")
+    layer = find_new_layer(featLayer.name + '_singlepart')
+    arcpy.MultipartToSinglepart_management(featLayer, layer)
     return layer
 
 
 def geoValidate(featLayer):
-    arcpy.AddMessage("B.4 %s\n" % (dir(featLayer),))
+    """This performs validation on the feature layer. """
     exList = []
-    rows = arcpy.SearchCursor(featLayer)
-    row = rows.next()
     fields = arcpy.ListFields(featLayer, "", "String")
-    while row:
+
+    # Validate bounding box.
+    extent = arcpy.Describe(featLayer).extent
+    if extent.XMin > extent.XMax:
+        exList.append('Invalid bounding box (X).')
+    if extent.YMin > extent.YMax:
+        exList.append('Invalid bounding box (Y).')
+
+    rows = arcpy.SearchCursor(featLayer)
+    while True:
+        row = rows.next()
+        if not row:
+            break
+
         for field in fields:
-            # arcpy.AddMessage("%s (%s) = %r" % (field.name, field.type, row.getValue(field.name)))
             if field.name == "Shape":
                 if row.getValue(field.name) == "Polygon":
-                    if field.name == "Shape_Area":
+                    if field.name == "Shape_Area":              # WING: This will always be false (see two lines up). What are you trying to test for?
                         if row.getValue(field.name) == 0:
                             exList.append("zero area polygon")
             elif field.name == "Polyline":
@@ -202,154 +240,190 @@ def geoValidate(featLayer):
                 if field.name == "LONGITUDE":
                     if row.getValue(field.name) > 90 or row.getValue(field.name) < -90:
                         exList.append("Longitude has non-applicable values")
-                        if field.name == "LATITUDE":
+                        if field.name == "LATITUDE":            # WING: This always won't be reached.
                             if row.getValue(field.name) > 180 or row.getValue(field.name) < -180:
                                 exList.append("Latitude has non-applicable values")
-        row = rows.next()
+
     if exList:
         raise Exception('; '.join(exList))
+
     return featLayer
 
 
-params = arcpy.GetParameterInfo()
-server = arcpy.GetParameterAsText(0)
-portnum = int(arcpy.GetParameterAsText(1))
-usrName = arcpy.GetParameterAsText(2)
-passWord = arcpy.GetParameterAsText(3)
-dbname = arcpy.GetParameterAsText(4)
-featLayer = arcpy.GetParameter(5)
-if not(arcpy.Exists(arcpy.GetParameter(5))):
-    raise RuntimeError('error in feature layer passed')
-else:
-    createCurObj(createConObj())
-    geoValidate(featLayer)
+def get_srs(layer):
+    """This takes a layer and returns the srs and native crs for it. """
+    layer_descr = arcpy.Describe(layer)
 
-    layer = explodeGeo(featLayer)
-    spatialRef = arcpy.Describe(layer).spatialReference
+    spatialRef = layer_descr.spatialReference
+    spaRef = 'EPSG:%s' % (spatialRef.factoryCode,)
+
     # use this for the native_crs xml
     # first, figure out exactly which properties to use.
     native_crs = spatialRef.exportToString()
-    arcpy.AddMessage(native_crs)
     if ";" in native_crs:
-        native_crs, leftover = native_crs.split(";", 1)
-    arcpy.AddMessage(native_crs)
-    desc = arcpy.Describe(layer)
-    ext = desc.extent
-    arcpy.AddMessage(', '.join(dir(ext)))
-    arcpy.AddMessage("Describing %r => %r\n\n" % (layer, ext))
-    arcpy.AddMessage('%r / %r / %r / %r\n\n' % (ext.upperRight, ext.lowerRight, ext.upperLeft, ext.lowerLeft))
-    arcpy.AddMessage('%r, %r - %r, %r\n\n' % (ext.XMin, ext.YMin, ext.XMax, ext.YMax))
-    lyname = arcpy.GetParameterAsText(6)
-    arcpy.AddMessage(dir(spatialRef))
-    spaRef = 'EPSG:%s' %(spatialRef.factoryCode)
-    XMin = ext.XMin
-    YMin = ext.YMin
-    XMax = ext.XMax
-    YMax = ext.YMax
+        native_crs = native_crs.split(";", 1)[0]
 
-try:
+    return (spaRef, native_crs)
 
-    arcpy.AddMessage(arcpy.GetSeverityLevel())
-    arcpy.SetSeverityLevel(1)
-    arcpy.DeleteFeatures_management(layer)
-except:
-    print arcpy.GetMessages()
 
-try:
-    from geoserver.catalog import Catalog
-except ImportError:
-    import traceback
-    tb = traceback.format_exc()
-    arcpy.AddMessage('Cannot import: %s\n' % (tb,))
-    raise
-
-try:
-    cat = Catalog("http://localhost:8080/geoserver/rest", "admin", "geoserver")
-    wsName = "tempWS" + str(run)
-    wspace = cat.create_workspace(wsName, "http://www.justice" + str(run) + "inc.gov" )
-    name= "dat_store"
-    name = create_new_ds_name(name)
-    datastore = cat.create_datastore(name, wspace)
-    datastore.connection_parameters = dict(
-        host="localhost",
-        port="5432",
-        database=dbname,
-        user ="vagrant",
-        schema = "public",
-        passwd="vagrant",
-        dbtype="postgis")
-    cat.save(datastore)
-    #global geoType
-    #g = arcpy.Geometry()
-    #geometryList = arcpy.CopyFeatures_management(featLayer, g)
-    #for geometry in geometryList:
-     #   if geometry.type == "polygon":
-      #      geoType = 'com.vividsolutions.jts.geom.Polygon'
-       # elif geometry.type == "polyline":
-        #    geoType = 'com.vividsolutions.jts.geom.LineString'
-        #elif geometry.type == "multipoint" or geometry.type == "point":
-         #   geoType = 'com.vividsolutions.jts.geom.Point'
-    arcpy.AddMessage(arcpy.__file__)
-    arcpy.AddMessage(sys.version)
-    #arcpy.AddMessage(geoType)
-    #attributes = {'the_geom': geoType, 'description': 'java.lang.String', 'timestamp': 'java.util.Date'}
-    nativeName = "dataType1"
-    layerTitle = "Lyr3"
-    # arcpy.AddMessage('<%s> <%s> <%s>' % (cat.service_url, wspace, name))
-    if XMin > XMax:
-        print "illegal bbox"
-    db_params = dict(
-        host = 'localhost',
-        port = '5432',
-        database = dbname,
-        user = 'vagrant',
-        password = 'vagrant',
-        )
-    arcpy.AddMessage("using alternate version of create postgis layer here")
-    #cat.create_postgres_layer(wsName, name, lyname, nativeName, layerTitle, spaRef, attributes, XMin, YMin, XMax, YMax, spaRef, native_crs,
-                             # arcpy.AddMessage)
-    # arcpy.AddMessage('%s: <%s>\n%r\n\n%s' % debug)
-    qe_params = {
-        'dbname' : '%dbname,',
-        'server' : '%server,',
-        'portnum' : '%portnum,',
-        'usrName' : '%usrName,',
-        'passWord' : '%passWord,',
-        }
-
-    arcpy.CheckOutExtension("DataInteroperability")
-    try:
-        params = (
-            'POSTGIS,%s,"RUNTIME_MACROS,""HOST,%s,PORT,%d,USER_NAME,%s,PASSWORD,%s,GENERIC_GEOMETRY,no,'
-            'LOWERCASE_ATTRIBUTE_NAMES,Yes"",META_MACROS,""DestHOST,%s,DestPORT,%d,DestUSER_NAME,%s,DestPASSWORD,%s,DestGENERIC_GEOMETRY,no,'
-            'DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false"' %
-                (dbname, server , portnum, usrName, passWord, server, portnum, usrName, passWord)
+def fix_geoserver_info(gs_info):
+    """This makes sure that the Geoserver URL points to the rest interface. """
+    gs_info = gs_info._replace(
+            base_url=gs_info.base_url.rstrip('/'),
             )
-        #QuickExport: ne_10m_populated_places_singlepart_153, 'POSTGIS,mar082012_3,"RUNTIME_MACROS,""HOST,localhost,PORT,5432,USER_NAME,vagrant,PASSWORD,vagrant,GENERIC_GEOMETRY,no,        LOWERCASE_ATTRIBUTE_NAMES,Yes"",META_MACROS,""DestHOST,localhost,DestPORT,5432,DestUSER_NAME,vagrant,DestPASSWORD,vagrant,DestGENERIC_GEOMETRY,no,         DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false"'
-        #arcpy.QuickExport_interop(layer, 'POSTGIS,' + dbname + "RUNTIME_MACROS,""HOST," + server + "PORT," + unicode(portnum) + "USER_NAME," + usrName + "PASSWORD," + passWord + "GENERIC_GEOMETRY,no, \
-        #LOWERCASE_ATTRIBUTE_NAMES,Yes,""META_MACROS,""DestHOST," + server + "DestPORT," + unicode(portnum) + "DestUSER_NAME," + usrName + "DestPASSWORD," + passWord + "DestGENERIC_GEOMETRY,no, \
-        #DestLOWERCASE_ATTRIBUTE_NAMES,Yes"",METAFILE,POSTGIS,COORDSYS,,__FME_DATASET_IS_SOURCE_,false" %(dbname,(server),(portnum),(usrName),(passWord),(server),(portnum),(usrName),(passWord)))
-        arcpy.AddMessage('QuickExport: %s, \'%s\'' % (layer, params))
-        #consider getting rid of the escape chars between the string params
-        arcpy.SetSeverityLevel(2)
-        print arcpy.GetSeverityLevel()
-        output = arcpy.QuickExport_interop(layer, params)
-    except arcpy.ExecuteWarning, warning:
-        arcpy.AddMessage('QuickExport warning: %s' % (warning,))
-    finally:
-        print arcpy.GetSeverityLevel()
-        arcpy.GetMessages()
-        arcpy.AddMessage('OUT = ' + repr(output))
-    #except:
-     #   print arcpy.AddMessage('QuickExport Parameters invalid')
-      #  raise Exception('whatever')
-    create_postgis_layer(cat, wspace, datastore, lyname, spaRef, native_crs, db_params, log)
-except:
-    import traceback
-    tb = traceback.format_exc()
-    arcpy.AddMessage('ERROR TB: %s' % (tb,))
-    raise
 
+    if gs_info.base_url.endswith('/web'):
+        gs_info = gs_info._replace(
+                base_url=gs_info.base_url[:-4]
+                )
+
+    if not gs_info.base_url.endswith('/rest'):
+        gs_info = gs_info._replace(
+                base_url=gs_info.base_url + '/rest'
+                )
+
+    return gs_info
+
+
+def create_datastore(cat, workspace, db_info, data_info):
+    """This creates the datastore on geoserver. """
+    datastore = cat.create_datastore(data_info.datastore, workspace)
+
+    if datastore.connection_parameters is None:
+        datastore.connection_parameters = {}
+    datastore.connection_parameters.update(db_info._asdict())
+    datastore.connection_parameters.update(dict(
+        schema='public',
+        dbtype='postgis',
+        ))
+
+    cat.save(datastore)
+    return datastore
+
+
+def make_export_params(db_info):
+    """\
+    This takes the db_info and converts it into a parameter string to pass to
+    the QuickExport tool.
+
+    """
+
+    params = [
+            'POSTGIS',                          db_info.database,
+            '"RUNTIME_MACROS',
+            '""HOST',                           db_info.host,
+            'PORT',                             db_info.port,
+            'USER_NAME',                        db_info.user,
+            'PASSWORD',                         db_info.password,
+            'GENERIC_GEOMETRY',                 'no',
+            'LOWERCASE_ATTRIBUTE_NAMES',        'Yes""',
+            'META_MACROS',
+            '""DestHOST',                       db_info.host,
+            'DestPORT',                         db_info.port,
+            'DestUSER_NAME',                    db_info.user,
+            'DestPASSWORD',                     db_info.password,
+            'DestGENERIC_GEOMETRY',             'no',
+            'DestLOWERCASE_ATTRIBUTE_NAMES',    'Yes""',
+            'METAFILE',
+            'POSTGIS',
+            'COORDSYS',
+            '',
+            '__FME_DATASET_IS_SOURCE_',         'false"'
+            ]
+
+    return ','.join(params)
+
+
+def quick_export(layer, db_info):
+    """A small facade over the QuickExport tool. """
+    arcpy.SetSeverityLevel(2)
+    arcpy.CheckOutExtension("DataInteroperability")
+    params = make_export_params(db_info)
+    # log('QuickExport:', layer, "'%s'" % (params,))
+    arcpy.QuickExport_interop(layer, params)
+
+
+# TODO: Umm. What's the difference between layer_name and lyname?
+
+def export_layer(db_info, gs_info, data_info, layer_name, lyname):
+    """\
+    This takes the parameters and performs the export.
+
+    This can be run as a module or called from other code.
+
+    """
+
+    geoValidate(layer_name)
+    layer = explodeGeo(layer_name)
+    (spaRef, native_crs) = get_srs(layer)
+
+    try:
+        # TODO: Surely we don't mean to actually delete the layer before we QE
+        # it?
+        arcpy.DeleteFeatures_management(layer)
+    except:
+        log(arcpy.GetMessages())
+
+    cat = Catalog(*tuple(gs_info))
+    wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
+    datastore = create_datastore(cat, wspace, db_info, data_info)
+
+    with closing(createConnObj(db_info._replace(database='postgres'))) as cxn:
+        createNewDb(cxn, db_info.database)
+    quick_export(layer, db_info)
+    create_postgis_layer(
+            cat, wspace, datastore, lyname, spaRef, native_crs, db_info, log,
+            )
+
+
+def main():
+    """\
+    This reads the parameters from the arcpy parameters and performs the
+    export.
+
+    """
+
+    # Clobber the log function to send everything to arcpy.AddMessage.
+    global log
+    log = arcpy_log
+
+    # TODO: Need to prompt for Geoserver info, data info. NOTHING below should
+    # be hard-coded.
+    db_info   = DbInfo(
+            host     = arcpy.GetParameterAsText(0),
+            port     = int(arcpy.GetParameterAsText(1)),
+            database = arcpy.GetParameterAsText(4),
+            user     = arcpy.GetParameterAsText(2),
+            password = arcpy.GetParameterAsText(3),
+            )
+    gs_info   = GeoserverInfo(
+            base_url = 'http://geoserver.dev:8080/geoserver/web',
+            user     = 'admin',
+            password = 'geoserver',
+            )
+    data_info = DataInfo(
+            workspace = create_run_name('sshPostGISws'),
+            namesapce = create_run_name('uri:uva.sshPostGIS'),
+            datastore = create_run_name('sshPostGISds'),
+            )
+
+    featLayer = arcpy.GetParameter(5)
+    lyname    = arcpy.GetParameterAsText(6)
+
+    if not(arcpy.Exists(arcpy.GetParameter(5))):
+        raise RuntimeError('error in feature layer passed')
+
+    gs_info = fix_geoserver_info(gs_info)
+    try:
+        export_layer(db_info, gs_info, data_info, featLayer, lyname)
+    except:
+        tb = traceback.format_exc()
+        log('ERROR TB', tb)
+        raise
+
+
+if __name__ == '__main__':
+    main()
 
 
 
