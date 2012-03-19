@@ -1,6 +1,6 @@
 #testing a python SSH module
 from collections import namedtuple
-import sys, arcpy, psycopg2, psycopg2.extensions, urllib2, geoserver, random, re, pprint 
+import sys, arcpy, psycopg2, psycopg2.extensions, urllib2, geoserver, random, re, pprint
 from contextlib import closing, contextmanager
 import time
 
@@ -143,7 +143,7 @@ exists or not.
     with closing(cxn.cursor()) as c:
         c.execute('SELECT COUNT(*) FROM pg_database WHERE datname=%s;', [db_name])
         #c.execute('select %s from pg_tables where schemaname='public';', db_name)
-        #if 
+        #if
         (count,) = c.fetchone()
         return count > 0
 
@@ -179,7 +179,7 @@ def explodeGeo(featLayer):
         layer = find_new_layer(featLayer.name + '_singlepart')
         arcpy.MultipartToSinglepart_management(featLayer, layer)
     return layer
-        
+
 
 def geoValidate(featLayer):
     arcpy.AddMessage("B.4 %s\n" % (dir(featLayer),))
@@ -204,13 +204,13 @@ def geoValidate(featLayer):
                         exList.append("Longitude has non-applicable values")
                         if field.name == "LATITUDE":
                             if row.getValue(field.name) > 180 or row.getValue(field.name) < -180:
-                                exList.append("Latitude has non-applicable values")       
+                                exList.append("Latitude has non-applicable values")
         row = rows.next()
     if exList:
         raise Exception('; '.join(exList))
     return featLayer
-    
-    
+
+
 params = arcpy.GetParameterInfo()
 server = arcpy.GetParameterAsText(0)
 portnum = int(arcpy.GetParameterAsText(1))
@@ -223,11 +223,11 @@ if not(arcpy.Exists(arcpy.GetParameter(5))):
 else:
     createCurObj(createConObj())
     geoValidate(featLayer)
-    
+
     layer = explodeGeo(featLayer)
     spatialRef = arcpy.Describe(layer).spatialReference
     # use this for the native_crs xml
-    # first, figure out exactly which properties to use. 
+    # first, figure out exactly which properties to use.
     native_crs = spatialRef.exportToString()
     arcpy.AddMessage(native_crs)
     if ";" in native_crs:
@@ -248,7 +248,7 @@ else:
     YMax = ext.YMax
 
 try:
-    
+
     arcpy.AddMessage(arcpy.GetSeverityLevel())
     arcpy.SetSeverityLevel(1)
     arcpy.DeleteFeatures_management(layer)
@@ -303,7 +303,7 @@ try:
         port = '5432',
         database = dbname,
         user = 'vagrant',
-        password = 'vagrant', 
+        password = 'vagrant',
         )
     arcpy.AddMessage("using alternate version of create postgis layer here")
     #cat.create_postgres_layer(wsName, name, lyname, nativeName, layerTitle, spaRef, attributes, XMin, YMin, XMax, YMax, spaRef, native_crs,
@@ -316,7 +316,7 @@ try:
         'usrName' : '%usrName,',
         'passWord' : '%passWord,',
         }
-    
+
     arcpy.CheckOutExtension("DataInteroperability")
     try:
         params = (
