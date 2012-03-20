@@ -251,7 +251,7 @@ try:
     
     arcpy.AddMessage(arcpy.GetSeverityLevel())
     arcpy.SetSeverityLevel(1)
-    arcpy.DeleteFeatures_management(layer)
+    #arcpy.DeleteFeatures_management(layer)
 except:
     print arcpy.GetMessages()
 
