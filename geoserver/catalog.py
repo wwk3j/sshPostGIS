@@ -206,27 +206,30 @@ class Catalog(object):
     if existing_layer is not None:
         msg = "There is already a layer named %s in %s" % (name, workspace)
         raise ConflictingDataError(msg)
-    if not isinstance(attributes, dict) or len(attributes) < 1:
-        msg = "The specified attributes are invalid"
+
+    # Attributes
+    has_geom = False
+    attributes_block = "<attributes>"
+    for attr in attributes:
+        log("{name} => {binding}".format(**attr))
+        has_geom = (has_geom or
+                    attr['binding'].startswith('com.vividsolutions.jts.geom'))
+        attributes_block += (
+                '<attribute>'
+                '<name>{name}</name>'
+                '<minOccurs>0</minOccurs>'
+                '<maxOccurs>1</maxOccurs>'
+                '<nillable>{nillable}</nillable>'
+                '<binding>{binding}</binding>'
+                '</attribute>'
+                ).format(**attr)
+    attributes_block += "</attributes>"
+    #slight change here from not has_geom to has_geom == False:
+    #no real change, still threw msg
+    if has_geom == False:
+        msg = "You must specify at least one Geometry"
         raise InvalidAttributesError(msg)
-    else:
-        has_geom = False
-        attributes_block = "<attributes>"
-        for k, v in attributes.items():
-            if v.find("com.vividsolutions.jts.geom") >= 0:
-                has_geom = True
-            attributes_block += ("<attribute>"
-                #altered lines of the catalog object below the name tags
-                "<name>{name}</name>"
-                "<minOccurs>0</minOccurs>"
-                "<maxOccurs>1</maxOccurs>"
-                "<nillable>true</nillable>"
-                "<binding>{binding}</binding>"
-                "</attribute>").format(name=k, binding=v)
-        attributes_block += "</attributes>"
-        if has_geom == False:
-            msg = "You must specify at least one Geometry"
-            raise InvalidAttributesError(msg)
+
     if XMin != None and YMin != None and XMax != None and YMax != None and spaRef != None:
         llbbxml = ("<latLonBoundingBox>"
                    "<minx>{XMin}</minx>"
