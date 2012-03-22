@@ -12,6 +12,7 @@
 
 from collections import namedtuple
 from contextlib import closing
+from functools import wraps
 import re
 import time
 import traceback
@@ -21,6 +22,8 @@ from geoserver.catalog import Catalog
 import psycopg2, psycopg2.extensions
 
 
+TRACE = True
+
 RUN = str(int(time.time()))
 
 #geoType = ""
@@ -28,7 +31,7 @@ RUN = str(int(time.time()))
 BoundingBox   = namedtuple('BoundingBox', 'xmin ymin xmax ymax')
 DbInfo        = namedtuple('DbInfo', 'host port database user password')
 GeoserverInfo = namedtuple('GeoserverInfo', 'base_url user password')
-DataInfo      = namedtuple('DataInfo', 'workspace namespace')
+DataInfo      = namedtuple('DataInfo', 'workspace namespace datastore')
 
 
 ATTR_TYPES = {
@@ -62,11 +65,36 @@ def log(*msg):
     print ' '.join( str(m) for m in msg )
 
 
+def trace(f):
+    """\
+    This enables tracing on a function. Set the value of TRACE to turn off
+    tracing.
+
+    """
+
+    if TRACE:
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            params = [ repr(a) for a in args ]
+            params += [ '%s=%r' % item for item in sorted(kwargs.items()) ]
+            log('%s(%s)' % (f.__name__, ', '.join(params)))
+
+            result = f(*args, **kwargs)
+
+            log('%s => %r' % (f.__name__, result))
+            return result
+    else:
+        wrapper = f
+
+    return wrapper
+
+
 def arcpy_log(*msg):
     """Print something(s) as an arcpy message. """
     arcpy.AddMessage(' '.join( str(m) for m in msg ))
 
 
+@trace
 def pg_to_attribute(c, row):
     """\
     This turns a row of column information from Postgres into an attribute
@@ -94,6 +122,7 @@ def pg_to_attribute(c, row):
             }
 
 
+@trace
 def load_attributes(cxn, table_name):
     """This queries the Postgres table to get the attributes for creating the layer. """
     with closing(cxn.cursor()) as c:
@@ -108,6 +137,7 @@ def load_attributes(cxn, table_name):
         return [ pg_to_attribute(c, row) for row in col_infos ]
 
 
+@trace
 def get_bounding_box(cxn, table_name, col_name):
     """This queries the PostGIS table for the native bounding box. """
     with closing(cxn.cursor()) as c:
@@ -128,12 +158,11 @@ def get_bounding_box(cxn, table_name, col_name):
         return bounding
 
 
+@trace
 def create_postgis_layer(
         cat, wspace, dstore, name, srs, native_crs, db_info, log
         ):
     """This creates and returns a new layer. """
-    log('create_postgis_layer')
-
     with closing(psycopg2.connect(**db_info._asdict())) as cxn:
         attributes = load_attributes(cxn, name)
         for attr in attributes:
@@ -153,6 +182,7 @@ def create_postgis_layer(
             )
 
 
+@trace
 def find_new_layer(layer_name):
     """This find a layer name that doesn't exist. """
     base_name = layer_name
@@ -163,11 +193,13 @@ def find_new_layer(layer_name):
     return layer_name
 
 
+@trace
 def create_run_name(name):
     """This returns a name with the run ID appended. """
     return name + '_' + RUN
 
 
+@trace
 def db_exists(cxn, db_name):
     """\
     This takes a connection to a Postgres object and db name and tests whether it
@@ -180,6 +212,7 @@ def db_exists(cxn, db_name):
         return count > 0
 
 
+@trace
 def createConnObj(db_info):
     """This creates a PostGIS connection. """
     try:
@@ -189,6 +222,7 @@ def createConnObj(db_info):
     return connxion
 
 
+@trace
 def createNewDb(connection, localDbn):
     """This creates a new database. """
     with closing(connection.cursor()) as cur:
@@ -200,6 +234,7 @@ def createNewDb(connection, localDbn):
             raise SystemExit('postgis connection timed out')
 
 
+@trace
 def explodeGeo(featLayer):
     """This actually implodes a multi-part layer into a single-part layer. """
     if not featLayer.isFeatureLayer:
@@ -209,6 +244,7 @@ def explodeGeo(featLayer):
     return layer
 
 
+@trace
 def geoValidate(featLayer):
     """This performs validation on the feature layer. """
     exList = []
@@ -250,6 +286,7 @@ def geoValidate(featLayer):
     return featLayer
 
 
+@trace
 def get_srs(layer):
     """This takes a layer and returns the srs and native crs for it. """
     layer_descr = arcpy.Describe(layer)
@@ -266,6 +303,7 @@ def get_srs(layer):
     return (spaRef, native_crs)
 
 
+@trace
 def fix_geoserver_info(gs_info):
     """This makes sure that the Geoserver URL points to the rest interface. """
     gs_info = gs_info._replace(
@@ -285,6 +323,7 @@ def fix_geoserver_info(gs_info):
     return gs_info
 
 
+@trace
 def create_datastore(cat, workspace, db_info, data_info):
     """This creates the datastore on geoserver. """
     datastore = cat.create_datastore(data_info.datastore, workspace)
@@ -293,14 +332,16 @@ def create_datastore(cat, workspace, db_info, data_info):
         datastore.connection_parameters = {}
     datastore.connection_parameters.update(db_info._asdict())
     datastore.connection_parameters.update(dict(
-        schema='public',
-        dbtype='postgis',
+        port   = str(db_info.port),
+        schema = 'public',
+        dbtype = 'postgis',
         ))
 
     cat.save(datastore)
     return datastore
 
 
+@trace
 def make_export_params(db_info):
     """\
     This takes the db_info and converts it into a parameter string to pass to
@@ -334,18 +375,17 @@ def make_export_params(db_info):
     return ','.join(params)
 
 
+@trace
 def quick_export(layer, db_info):
     """A small facade over the QuickExport tool. """
     arcpy.SetSeverityLevel(2)
     arcpy.CheckOutExtension("DataInteroperability")
     params = make_export_params(db_info)
-    # log('QuickExport:', layer, "'%s'" % (params,))
     arcpy.QuickExport_interop(layer, params)
 
 
-# TODO: Umm. What's the difference between layer_name and lyname?
-
-def export_layer(db_info, gs_info, data_info, layer_name, lyname):
+@trace
+def export_layer(db_info, gs_info, data_info, layer_name):
     """\
     This takes the parameters and performs the export.
 
@@ -365,7 +405,7 @@ def export_layer(db_info, gs_info, data_info, layer_name, lyname):
         createNewDb(cxn, db_info.database)
     quick_export(layer, db_info)
     create_postgis_layer(
-            cat, wspace, datastore, lyname, spaRef, native_crs, db_info, log,
+            cat, wspace, datastore, layer, spaRef, native_crs, db_info, log,
             )
 
     try:
@@ -387,38 +427,38 @@ def main():
     global log
     log = arcpy_log
 
-    # TODO: Need to prompt for Geoserver info, data info. NOTHING below should
-    # be hard-coded.
-    db_info   = DbInfo(
-            host     = arcpy.GetParameterAsText(0),
-            port     = int(arcpy.GetParameterAsText(1)),
-            database = arcpy.GetParameterAsText(4),
-            user     = arcpy.GetParameterAsText(2),
-            password = arcpy.GetParameterAsText(3),
-            )
-    gs_info   = GeoserverInfo(
-            base_url = 'http://geoserver.dev:8080/geoserver/web',
-            user     = 'admin',
-            password = 'geoserver',
-            )
-    data_info = DataInfo(
-            workspace = create_run_name('sshPostGISws'),
-            namesapce = create_run_name('uri:uva.sshPostGIS'),
-            datastore = create_run_name('sshPostGISds'),
-            )
-
-    featLayer = arcpy.GetParameter(5)
-    lyname    = arcpy.GetParameterAsText(6)
-
-    if not(arcpy.Exists(arcpy.GetParameter(5))):
-        raise RuntimeError('error in feature layer passed')
-
-    gs_info = fix_geoserver_info(gs_info)
     try:
-        export_layer(db_info, gs_info, data_info, featLayer, lyname)
+        featLayer = arcpy.GetParameter(0)
+
+        # TODO: Need to prompt for Geoserver info, data info. NOTHING below should
+        # be hard-coded.
+        db_info   = DbInfo(
+                host     = arcpy.GetParameterAsText(1),
+                port     = int(arcpy.GetParameterAsText(2)),
+                database = arcpy.GetParameterAsText(5),
+                user     = arcpy.GetParameterAsText(3),
+                password = arcpy.GetParameterAsText(4),
+                )
+        gs_info   = GeoserverInfo(
+                base_url = 'http://geoserver.dev:8080/geoserver/web',
+                user     = 'admin',
+                password = 'geoserver',
+                )
+        data_info = DataInfo(
+                workspace = create_run_name('sshPostGISws'),
+                namespace = create_run_name('uri:uva.sshPostGIS'),
+                datastore = create_run_name('sshPostGISds'),
+                )
+
+        if not arcpy.Exists(featLayer):
+            raise RuntimeError('error in feature layer passed')
+
+        gs_info = fix_geoserver_info(gs_info)
+
+        export_layer(db_info, gs_info, data_info, featLayer)
     except:
         tb = traceback.format_exc()
-        log('ERROR TB', tb)
+        log('ERROR', tb)
         raise
 
 
