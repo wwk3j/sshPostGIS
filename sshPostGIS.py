@@ -357,13 +357,6 @@ def export_layer(db_info, gs_info, data_info, layer_name, lyname):
     layer = explodeGeo(layer_name)
     (spaRef, native_crs) = get_srs(layer)
 
-    try:
-        # TODO: Surely we don't mean to actually delete the layer before we QE
-        # it?
-        arcpy.DeleteFeatures_management(layer)
-    except:
-        log(arcpy.GetMessages())
-
     cat = Catalog(*tuple(gs_info))
     wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
     datastore = create_datastore(cat, wspace, db_info, data_info)
@@ -374,6 +367,13 @@ def export_layer(db_info, gs_info, data_info, layer_name, lyname):
     create_postgis_layer(
             cat, wspace, datastore, lyname, spaRef, native_crs, db_info, log,
             )
+
+    try:
+        # TODO: Surely we don't mean to actually delete the layer before we QE
+        # it?
+        arcpy.DeleteFeatures_management(layer)
+    except:
+        log(arcpy.GetMessages())
 
 
 def main():
