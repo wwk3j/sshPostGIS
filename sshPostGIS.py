@@ -36,10 +36,12 @@ DataInfo      = namedtuple('DataInfo', 'workspace namespace datastore')
 
 ATTR_TYPES = {
         'bpchar'       : 'java.lang.String',
+        'float4'       : 'java.lang.Double',
         'float8'       : 'java.lang.Double',
         'int2'         : 'java.lang.Short',
         'int4'         : 'java.lang.Integer',
-
+        }
+GEOM_TYPES = {
         'LINESEGMENT'  : 'com.vividsolutions.jts.geom.LineSegment',
         'LINESTRING'   : 'com.vividsolutions.jts.geom.LineString',
         'MULTIPOINT'   : 'com.vividsolutions.jts.geom.MultiPoint',
@@ -48,6 +50,7 @@ ATTR_TYPES = {
         'POINTM'       : 'com.vividsolutions.jts.geom.Point',
         'POLYGON'      : 'com.vividsolutions.jts.geom.Polygon',
         'TRIANGLE'     : 'com.vividsolutions.jts.geom.Triangle',
+        # TODO: MULTILINESTRING, GEOMETRYCOLLECTION
         }
 reEXTENT = re.compile(r'''
     ^ BOX \(
@@ -77,11 +80,11 @@ def trace(f):
         def wrapper(*args, **kwargs):
             params = [ repr(a) for a in args ]
             params += [ '%s=%r' % item for item in sorted(kwargs.items()) ]
-            log('%s(%s)' % (f.__name__, ', '.join(params)))
+            log('TRACE', '%s(%s)' % (f.__name__, ', '.join(params)))
 
             result = f(*args, **kwargs)
 
-            log('%s => %r' % (f.__name__, result))
+            log('TRACE', '%s => %r' % (f.__name__, result))
             return result
     else:
         wrapper = f
@@ -93,9 +96,25 @@ def arcpy_log(*msg):
     """Print something(s) as an arcpy message. """
     arcpy.AddMessage(' '.join( str(m) for m in msg ))
 
+@trace
+def get_geometries(c, table_name):
+    """\
+    This queries the PostGIS database to return a dictionary mapping geometry
+    column names to geometry types for the table.
+
+    """
+    c.execute('''
+        SELECT f_geometry_column, type
+        FROM geometry_columns
+        WHERE f_table_name=%s;
+        ''',
+        (table_name,),
+        )
+    return dict(c.fetchall())
+
 
 @trace
-def pg_to_attribute(c, row):
+def pg_to_attribute(c, row, geometries):
     """\
     This turns a row of column information from Postgres into an attribute
     dictionary.
@@ -104,16 +123,13 @@ def pg_to_attribute(c, row):
 
     (table_name, col_name, nillable, type_name) = row
     is_geom = False
+
     attr_type = ATTR_TYPES.get(type_name)
-    if attr_type is None:
-        c.execute(
-                'SELECT DISTINCT GeometryType("%s") FROM "%s";' % (
-                    col_name, table_name,
-                    )
-                )
-        # Since there should only be one geomtry type, only take the first one.
-        attr_type = ATTR_TYPES.get(c.fetchone()[0])
+    # TODO: Else branch might should print a warning.
+    if attr_type is None and col_name in geometries:
+        attr_type = GEOM_TYPES[geometries[col_name]]
         is_geom   = True
+
     return {
             'name'     : col_name,
             'nillable' : nillable,
@@ -126,6 +142,7 @@ def pg_to_attribute(c, row):
 def load_attributes(cxn, table_name):
     """This queries the Postgres table to get the attributes for creating the layer. """
     with closing(cxn.cursor()) as c:
+        geometries = get_geometries(c, table_name)
         c.execute('''
             SELECT table_name, column_name, is_nullable, udt_name
             FROM information_schema.columns
@@ -134,7 +151,7 @@ def load_attributes(cxn, table_name):
             (table_name,)
             )
         col_infos = c.fetchall()
-        return [ pg_to_attribute(c, row) for row in col_infos ]
+        return [ pg_to_attribute(c, row, geometries) for row in col_infos ]
 
 
 @trace
@@ -353,14 +370,14 @@ def make_export_params(db_info):
             'POSTGIS',                          db_info.database,
             '"RUNTIME_MACROS',
             '""HOST',                           db_info.host,
-            'PORT',                             db_info.port,
+            'PORT',                             str(db_info.port),
             'USER_NAME',                        db_info.user,
             'PASSWORD',                         db_info.password,
             'GENERIC_GEOMETRY',                 'no',
             'LOWERCASE_ATTRIBUTE_NAMES',        'Yes""',
             'META_MACROS',
             '""DestHOST',                       db_info.host,
-            'DestPORT',                         db_info.port,
+            'DestPORT',                         str(db_info.port),
             'DestUSER_NAME',                    db_info.user,
             'DestPASSWORD',                     db_info.password,
             'DestGENERIC_GEOMETRY',             'no',
@@ -378,8 +395,8 @@ def make_export_params(db_info):
 @trace
 def quick_export(layer, db_info):
     """A small facade over the QuickExport tool. """
-    arcpy.SetSeverityLevel(2)
-    arcpy.CheckOutExtension("DataInteroperability")
+    # arcpy.SetSeverityLevel(2)
+    # arcpy.CheckOutExtension("DataInteroperability")
     params = make_export_params(db_info)
     arcpy.QuickExport_interop(layer, params)
 
