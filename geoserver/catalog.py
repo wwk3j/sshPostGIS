@@ -266,7 +266,7 @@ class Catalog(object):
     url = '%s/workspaces/%s/datastores/%s/featuretypes' % (self.service_url, workspace, store)
 
     headers, response = self.http.request(url, "POST", xml, headers)
-    assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\n' + xml
+    assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\nURL: ' + url + ' =>\n' + xml
     self._cache.clear()
     return self.get_resource(name)
 
