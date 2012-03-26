@@ -316,6 +316,7 @@ def get_srs(layer):
     native_crs = spatialRef.exportToString()
     if ";" in native_crs:
         native_crs = native_crs.split(";", 1)[0]
+    native_crs = native_crs.replace("'", '"')
 
     return (spaRef, native_crs)
 
