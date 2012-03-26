@@ -22,7 +22,7 @@ from geoserver.catalog import Catalog
 import psycopg2, psycopg2.extensions
 
 
-TRACE = True
+TRACE = False
 
 RUN = str(int(time.time()))
 
