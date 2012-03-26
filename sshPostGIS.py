@@ -350,6 +350,7 @@ def create_datastore(cat, workspace, db_info, data_info):
         datastore.connection_parameters = {}
     datastore.connection_parameters.update(db_info._asdict())
     datastore.connection_parameters.update(dict(
+        passwd = db_info.password,
         port   = str(db_info.port),
         schema = 'public',
         dbtype = 'postgis',
