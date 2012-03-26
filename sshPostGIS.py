@@ -125,7 +125,9 @@ def pg_to_attribute(c, row, geometries):
     is_geom = False
 
     attr_type = ATTR_TYPES.get(type_name)
-    # TODO: Else branch might should print a warning.
+
+    # TODO: Else branch might should print a warning if there's no attr_type
+    # found.
     if attr_type is None and col_name in geometries:
         attr_type = GEOM_TYPES[geometries[col_name]]
         is_geom   = True
@@ -428,8 +430,6 @@ def export_layer(db_info, gs_info, data_info, layer_name):
             )
 
     try:
-        # TODO: Surely we don't mean to actually delete the layer before we QE
-        # it?
         arcpy.DeleteFeatures_management(layer)
     except:
         log(arcpy.GetMessages())
@@ -450,7 +450,7 @@ def main():
         featLayer = arcpy.GetParameter(0)
 
         # TODO: Need to prompt for Geoserver info, data info. NOTHING below should
-        # be hard-coded.
+        # be hard-coded. There should be NO calls to create_run_name.
         db_info   = DbInfo(
                 host     = arcpy.GetParameterAsText(1),
                 port     = int(arcpy.GetParameterAsText(2)),
