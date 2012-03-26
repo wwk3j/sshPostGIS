@@ -177,7 +177,7 @@ def get_bounding_box(cxn, table_name, col_name):
 
 @trace
 def create_postgis_layer(
-        cat, wspace, dstore, name, srs, native_crs, db_info, log
+        cat, wspace, dstore, name, srs, native_crs, db_info
         ):
     """This creates and returns a new layer. """
     with closing(psycopg2.connect(**db_info._asdict())) as cxn:
@@ -195,7 +195,7 @@ def create_postgis_layer(
     return cat.create_postgres_layer(
             wspace.name, dstore.name, name, native, title, srs, attributes,
             bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax,
-            srs, native_crs, log
+            srs, native_crs
             )
 
 
@@ -422,7 +422,7 @@ def export_layer(db_info, gs_info, data_info, layer_name):
         createNewDb(cxn, db_info.database)
     quick_export(layer, db_info)
     create_postgis_layer(
-            cat, wspace, datastore, layer, spaRef, native_crs, db_info, log,
+            cat, wspace, datastore, layer, spaRef, native_crs, db_info,
             )
 
     try:

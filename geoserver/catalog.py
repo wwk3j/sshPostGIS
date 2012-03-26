@@ -194,7 +194,7 @@ class Catalog(object):
           return stores
 
   def create_postgres_layer(self, workspace, store, name, nativeName, layerTitle, 
-                            srs, attributes, XMin, YMin, XMax, YMax, spaRef, nativeCRS, log):
+                            srs, attributes, XMin, YMin, XMax, YMax, spaRef, nativeCRS):
     if isinstance(workspace, basestring):
         ws = self.get_workspace(workspace)
     else:
@@ -211,7 +211,6 @@ class Catalog(object):
     has_geom = False
     attributes_block = "<attributes>"
     for attr in attributes:
-        log("{name} => {binding}".format(**attr))
         has_geom = (has_geom or
                     attr['binding'].startswith('com.vividsolutions.jts.geom'))
         attributes_block += (
@@ -260,8 +259,6 @@ class Catalog(object):
             "</featureType>").format(name=name, nativeName=nativeName,
                                         title=layerTitle, srs=srs,
                                         attributes=attributes_block, latLonBoundingBox=llbbxml, nativeBoundingBox=natbbxml, nativeCRS=projxml)
-    log("XML")
-    log(xml)
     headers = { "Content-Type": "application/xml" }
     url = '%s/workspaces/%s/datastores/%s/featuretypes' % (self.service_url, workspace, store)
 
