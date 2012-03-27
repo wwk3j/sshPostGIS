@@ -211,7 +211,7 @@ class Catalog(object):
     has_geom = False
     attributes_block = "<attributes>"
     for attr in attributes:
-        log("{name} => {binding}".format(**attr))
+        log("{name} => {binding}".format(**attr)
         has_geom = (has_geom or
                     attr['binding'].startswith('com.vividsolutions.jts.geom'))
         attributes_block += (
@@ -230,38 +230,39 @@ class Catalog(object):
         msg = "You must specify at least one Geometry"
         raise InvalidAttributesError(msg)
 
-    if XMin != None and YMin != None and XMax != None and YMax != None and spaRef != None:
-        llbbxml = ("<latLonBoundingBox>"
-                   "<minx>{XMin}</minx>"
-                    "<maxx>{XMax}</maxx>"
-                    "<miny>{YMin}</miny>"
-                    "<maxy>{YMax}</maxy>"
-                    "<crs>{spaRef}</crs>"
-                    "</latLonBoundingBox>").format(XMin=XMin, XMax=XMax, YMin=YMin, YMax=YMax, spaRef=spaRef)
-        natbbxml = ("<nativeBoundingBox>"
-                    "<minx>{XMin}</minx>"
-                    "<maxx>{XMax}</maxx>"
-                    "<miny>{YMin}</miny>"
-                    "<maxy>{YMax}</maxy>"
-                    "<crs>{spaRef}</crs>"
-                    "</nativeBoundingBox>").format(XMin=XMin, XMax=XMax, YMin=YMin, YMax=YMax, spaRef=spaRef)
-        projxml = ("<nativeCRS>{nativeCRS}</nativeCRS>").format(nativeCRS=nativeCRS)
-    else:
-        has_geom = False
-        llbmsg = "You must specify extent parameters and spatial reference factory code"
-        raise InvalidAttributesError(llbmsg)
+    #if XMin != None and YMin != None and XMax != None and YMax != None and spaRef != None:
+     #   llbbxml = ("<latLonBoundingBox>"
+      #             "<minx>{XMin}</minx>"
+       #             "<maxx>{XMax}</maxx>"
+        #            "<miny>{YMin}</miny>"
+         #           "<maxy>{YMax}</maxy>"
+          #          "<crs>{spaRef}</crs>"
+           #         "</latLonBoundingBox>").format(XMin=XMin, XMax=XMax, YMin=YMin, YMax=YMax, spaRef=spaRef)
+        #natbbxml = ("<nativeBoundingBox>"
+         #           "<minx>{XMin}</minx>"
+          #          "<maxx>{XMax}</maxx>"
+           #         "<maxy>{YMax}</maxy>"
+            #        "<crs>{spaRef}</crs>"
+             #       "</nativeBoundingBox>").format(XMin=XMin, XMax=XMax, YMin=YMin, YMax=YMax, spaRef=spaRef)
+        #projxml = ("<nativeCRS>{nativeCRS}</nativeCRS>").format(nativeCRS=nativeCRS)
+    #else:
+     #   has_geom = False
+      #  llbmsg = "You must specify extent parameters and spatial reference factory code"
+       # raise InvalidAttributesError(llbmsg)
+    #removed from the formatting below: , latLonBoundingBox=llbbxml, nativeBoundingBox=natbbxml, nativeCRS=projxml
+    
     xml = ("<featureType>"
             "<name>{name}</name>"
             "<nativeName>{nativeName}</nativeName>"
             "<title>{title}</title>"
             "<srs>{srs}</srs>"
             "{attributes}"
-            "{latLonBoundingBox}"
-            "{nativeBoundingBox}"
+            #"{latLonBoundingBox}"
+            #"{nativeBoundingBox}"
             "{nativeCRS}"
             "</featureType>").format(name=name, nativeName=nativeName,
                                         title=layerTitle, srs=srs,
-                                        attributes=attributes_block, latLonBoundingBox=llbbxml, nativeBoundingBox=natbbxml, nativeCRS=projxml)
+                                        attributes=attributes_block)
     log("XML")
     log(xml)
     headers = { "Content-Type": "application/xml" }
