@@ -194,7 +194,7 @@ class Catalog(object):
           return stores
 
   def create_postgres_layer(self, workspace, store, name, nativeName, layerTitle, 
-                            srs, attributes, XMin, YMin, XMax, YMax, spaRef, nativeCRS, log):
+                            srs, attributes, XMin, YMin, XMax, YMax, spaRef, nativeCRS):
     if isinstance(workspace, basestring):
         ws = self.get_workspace(workspace)
     else:
@@ -211,7 +211,6 @@ class Catalog(object):
     has_geom = False
     attributes_block = "<attributes>"
     for attr in attributes:
-        log("{name} => {binding}".format(**attr)
         has_geom = (has_geom or
                     attr['binding'].startswith('com.vividsolutions.jts.geom'))
         attributes_block += (
@@ -224,9 +223,7 @@ class Catalog(object):
                 '</attribute>'
                 ).format(**attr)
     attributes_block += "</attributes>"
-    #slight change here from not has_geom to has_geom == False:
-    #no real change, still threw msg
-    if has_geom == False:
+    if not has_geom:
         msg = "You must specify at least one Geometry"
         raise InvalidAttributesError(msg)
 
@@ -262,14 +259,12 @@ class Catalog(object):
             "{nativeCRS}"
             "</featureType>").format(name=name, nativeName=nativeName,
                                         title=layerTitle, srs=srs,
-                                        attributes=attributes_block)
-    log("XML")
-    log(xml)
+                                        attributes=attributes_block, latLonBoundingBox=llbbxml, nativeBoundingBox=natbbxml, nativeCRS=projxml)
     headers = { "Content-Type": "application/xml" }
     url = '%s/workspaces/%s/datastores/%s/featuretypes' % (self.service_url, workspace, store)
 
     headers, response = self.http.request(url, "POST", xml, headers)
-    assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\n' + xml
+    assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\nURL: ' + url + ' =>\n' + xml
     self._cache.clear()
     return self.get_resource(name)
 

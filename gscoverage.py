@@ -135,6 +135,7 @@ def get_bounding_box(cxn, table_name, col_name):
             col=col_name, table=table_name,
             ))
         extent = c.fetchone()[0]
+
         m = reEXTENT.match(extent)
         if m is None:
             log('WARNING: Invalid bounding box: %s' % (extent,))
