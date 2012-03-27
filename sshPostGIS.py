@@ -65,6 +65,8 @@ def pg_to_attribute(c, row):
 
 def load_attributes(cxn, table_name):
     """This queries the Postgres table to get the attributes for creating the layer. """
+    #change rendered here was setting table_name equal to the column objectid from postgis
+    #table_name = 'objectid'
     with closing(cxn.cursor()) as c:
         c.execute('''
             SELECT table_name, column_name, is_nullable, udt_name
@@ -74,6 +76,11 @@ def load_attributes(cxn, table_name):
             (table_name,)
             )
         col_infos = c.fetchall()
+        #for index in range(len(col_infos)):
+         #   col_infos[index] = '<' + index + '>' 
+        #for row in col_infos:
+         #   col_infos.index
+            #printf("this is what the row looks like %s", %(row[range(row[0], row[n-1])]))
         return [ pg_to_attribute(c, row) for row in col_infos ]
 
 
@@ -101,7 +108,6 @@ def create_postgis_layer(
         ):
     """This creates and returns a new layer. """
     log('create_postgis_layer')
-
     with closing(psycopg2.connect(**db_params)) as cxn:
         attributes = load_attributes(cxn, name)
         arcpy.AddMessage(repr(attributes))
@@ -241,7 +247,7 @@ else:
     arcpy.AddMessage('%r, %r - %r, %r\n\n' % (ext.XMin, ext.YMin, ext.XMax, ext.YMax))
     lyname = arcpy.GetParameterAsText(6)
     arcpy.AddMessage(dir(spatialRef))
-    spaRef = 'EPSG:%s' %(spatialRef.factoryCode)
+    srs = 'EPSG:%s' %(spatialRef.factoryCode)
     XMin = ext.XMin
     YMin = ext.YMin
     XMax = ext.XMax
@@ -343,7 +349,7 @@ try:
     #except:
      #   print arcpy.AddMessage('QuickExport Parameters invalid')
       #  raise Exception('whatever')
-    create_postgis_layer(cat, wspace, datastore, lyname, spaRef, native_crs, db_params, log)
+    create_postgis_layer(cat, wspace, datastore, lyname, srs, native_crs, db_params, log)
 except:
     import traceback
     tb = traceback.format_exc()
