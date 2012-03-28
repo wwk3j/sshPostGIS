@@ -1,9 +1,14 @@
 ERROR Traceback (most recent call last):
   File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 486, in main
     export_layer(db_info, gs_info, data_info, featLayer)
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 429, in export_layer
-    with closing(createConnObj(db_info._replace(database='postgres'))) as cxn:
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 240, in createConnObj
-    connxion = psycopg2.connect(**db_info._asdict())
-OperationalError: FATAL:  password authentication failed for user "anything"
-FATAL:  password authentication failed for user "anything"
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 426, in export_layer
+    wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\catalog.py", line 524, in create_workspace
+    headers, response = self.http.request(workspace_url, "POST", xml, headers)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\httplib2\__init__.py", line 1544, in request
+    (response, content) = self._request(conn, authority, uri, request_uri, method, body, headers, redirections, cachekey)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\httplib2\__init__.py", line 1294, in _request
+    (response, content) = self._conn_request(conn, request_uri, method, body, headers)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\httplib2\__init__.py", line 1236, in _conn_request
+    raise ServerNotFoundError("Unable to find the server at %s" % conn.host)
+ServerNotFoundError: Unable to find the server at geoserver.dev
