@@ -46,11 +46,12 @@ GEOM_TYPES = {
         'LINESTRING'   : 'com.vividsolutions.jts.geom.LineString',
         'MULTIPOINT'   : 'com.vividsolutions.jts.geom.MultiPoint',
         'MULTIPOLYGON' : 'com.vividsolutions.jts.geom.MultiPolygon',
+        'MULTILINESTRING' : 'com.vividsolutions.jts.geom.MultiLineString',        
         'POINT'        : 'com.vividsolutions.jts.geom.Point',
         'POINTM'       : 'com.vividsolutions.jts.geom.Point',
         'POLYGON'      : 'com.vividsolutions.jts.geom.Polygon',
         'TRIANGLE'     : 'com.vividsolutions.jts.geom.Triangle',
-        # TODO: MULTILINESTRING, GEOMETRYCOLLECTION
+        # TODO: MULTILINESTRING, GEOMETRYCOLLECTION; may need edit depending on whether it takes or not
         }
 reEXTENT = re.compile(r'''
     ^ BOX \(
@@ -131,7 +132,8 @@ def pg_to_attribute(c, row, geometries):
     if attr_type is None and col_name in geometries:
         attr_type = GEOM_TYPES[geometries[col_name]]
         is_geom   = True
-
+    else:
+        arcpy.AddMessage("is_geom is false and attr_type is still None") 
     return {
             'name'     : col_name,
             'nillable' : nillable,
@@ -212,10 +214,10 @@ def find_new_layer(layer_name):
     return layer_name
 
 
-@trace
-def create_run_name(name):
-    """This returns a name with the run ID appended. """
-    return name + '_' + RUN
+#@trace
+#def create_run_name(name):
+ #   """This returns a name with the run ID appended. """
+  #  return name + '_' + RUN
 
 
 @trace
@@ -285,19 +287,21 @@ def geoValidate(featLayer):
         for field in fields:
             if field.name == "Shape":
                 if row.getValue(field.name) == "Polygon":
-                    if field.name == "Shape_Area":              # WING: This will always be false (see two lines up). What are you trying to test for?
-                        if row.getValue(field.name) == 0:
-                            exList.append("zero area polygon")
+                    continue
+            if field.name == "Shape_Area":              # WING: This will always be false (see two lines up). What are you trying to test for?
+                if row.getValue(field.name) == 0:
+                    exList.append("zero area polygon")
             elif field.name == "Polyline":
                 if row.getValue(field.name) == 0:
                     exList.append("line length is zero")
             elif field.name == "Point":
-                if field.name == "LONGITUDE":
-                    if row.getValue(field.name) > 90 or row.getValue(field.name) < -90:
-                        exList.append("Longitude has non-applicable values")
-                        if field.name == "LATITUDE":            # WING: This always won't be reached.
-                            if row.getValue(field.name) > 180 or row.getValue(field.name) < -180:
-                                exList.append("Latitude has non-applicable values")
+                continue
+            if field.name == "LONGITUDE":
+                if row.getValue(field.name) > 90 or row.getValue(field.name) < -90:
+                    exList.append("Longitude has non-applicable values")
+            if field.name == "LATITUDE": # WING: This always won't be reached.
+                if row.getValue(field.name) > 180 or row.getValue(field.name) < -180:
+                    exList.append("Latitude has non-applicable values")
 
     if exList:
         raise Exception('; '.join(exList))
@@ -418,9 +422,9 @@ def export_layer(db_info, gs_info, data_info, layer_name):
     layer = explodeGeo(layer_name)
     (spaRef, native_crs) = get_srs(layer)
 
-    cat = Catalog(*tuple(gs_info))
-    wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
-    datastore = create_datastore(cat, wspace, db_info, data_info)
+    #cat = Catalog(*tuple(gs_info))
+    #wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
+    #datastore = create_datastore(cat, wspace, db_info, data_info)
 
     with closing(createConnObj(db_info._replace(database='postgres'))) as cxn:
         createNewDb(cxn, db_info.database)
@@ -428,7 +432,6 @@ def export_layer(db_info, gs_info, data_info, layer_name):
     create_postgis_layer(
             cat, wspace, datastore, layer, spaRef, native_crs, db_info,
             )
-
     try:
         arcpy.DeleteFeatures_management(layer)
     except:
@@ -459,14 +462,20 @@ def main():
                 password = arcpy.GetParameterAsText(4),
                 )
         gs_info   = GeoserverInfo(
-                base_url = 'http://geoserver.dev:8080/geoserver/web',
-                user     = 'admin',
-                password = 'geoserver',
+                base_url = arcpy.GetParameterAsText(5),
+                #'http://geoserver.dev:8080/geoserver/web',
+                user = arcpy.GetParameterAsText(6),
+                #'admin', 
+                password = arcpy.GetParameterAsText(7),
+                #'geoserver',
                 )
         data_info = DataInfo(
-                workspace = create_run_name('sshPostGISws'),
-                namespace = create_run_name('uri:uva.sshPostGIS'),
-                datastore = create_run_name('sshPostGISds'),
+                workspace = arcpy.GetParameterAsText(8),
+                namespace = arcpy.GetParameterAsText(9),
+                datastore = arcpy.GetParameterAsText(10),
+                #workspace = create_run_name(arcpy.GetParameterAsText(8)),
+                #namespace = create_run_name(arcpy.GetParameterAsText(9)),
+                #datastore = create_run_name(arcpy.GetParameterAsText(10)),
                 )
 
         if not arcpy.Exists(featLayer):
