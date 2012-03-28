@@ -422,9 +422,9 @@ def export_layer(db_info, gs_info, data_info, layer_name):
     layer = explodeGeo(layer_name)
     (spaRef, native_crs) = get_srs(layer)
 
-    #cat = Catalog(*tuple(gs_info))
-    #wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
-    #datastore = create_datastore(cat, wspace, db_info, data_info)
+    cat = Catalog(*tuple(gs_info))
+    wspace = cat.create_workspace(data_info.workspace, data_info.namespace)
+    datastore = create_datastore(cat, wspace, db_info, data_info)
 
     with closing(createConnObj(db_info._replace(database='postgres'))) as cxn:
         createNewDb(cxn, db_info.database)
@@ -432,10 +432,10 @@ def export_layer(db_info, gs_info, data_info, layer_name):
     create_postgis_layer(
             cat, wspace, datastore, layer, spaRef, native_crs, db_info,
             )
-    try:
-        arcpy.DeleteFeatures_management(layer)
-    except:
-        log(arcpy.GetMessages())
+    #try:
+     #   arcpy.DeleteFeatures_management(layer)
+    #except:
+     #   log(arcpy.GetMessages())
 
 
 def main():
@@ -457,22 +457,22 @@ def main():
         db_info   = DbInfo(
                 host     = arcpy.GetParameterAsText(1),
                 port     = int(arcpy.GetParameterAsText(2)),
-                database = arcpy.GetParameterAsText(5),
-                user     = arcpy.GetParameterAsText(3),
-                password = arcpy.GetParameterAsText(4),
+                database = arcpy.GetParameterAsText(3),
+                user     = arcpy.GetParameterAsText(4),
+                password = arcpy.GetParameterAsText(5),
                 )
         gs_info   = GeoserverInfo(
-                base_url = arcpy.GetParameterAsText(5),
+                base_url = arcpy.GetParameterAsText(6),
                 #'http://geoserver.dev:8080/geoserver/web',
-                user = arcpy.GetParameterAsText(6),
+                user = arcpy.GetParameterAsText(7),
                 #'admin', 
-                password = arcpy.GetParameterAsText(7),
+                password = arcpy.GetParameterAsText(8),
                 #'geoserver',
                 )
         data_info = DataInfo(
-                workspace = arcpy.GetParameterAsText(8),
-                namespace = arcpy.GetParameterAsText(9),
-                datastore = arcpy.GetParameterAsText(10),
+                workspace = arcpy.GetParameterAsText(9),
+                namespace = arcpy.GetParameterAsText(10),
+                datastore = arcpy.GetParameterAsText(11),
                 #workspace = create_run_name(arcpy.GetParameterAsText(8)),
                 #namespace = create_run_name(arcpy.GetParameterAsText(9)),
                 #datastore = create_run_name(arcpy.GetParameterAsText(10)),
