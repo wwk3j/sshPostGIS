@@ -23,7 +23,6 @@ import psycopg2, psycopg2.extensions
 
 
 TRACE = False
-
 RUN = str(int(time.time()))
 
 #geoType = ""
@@ -121,7 +120,6 @@ def pg_to_attribute(c, row, geometries):
     dictionary.
 
     """
-
     (table_name, col_name, nillable, type_name) = row
     is_geom = False
 
@@ -140,7 +138,7 @@ def pg_to_attribute(c, row, geometries):
             'binding'  : attr_type,
             'is_geom'  : is_geom,
             }
-
+    
 
 @trace
 def load_attributes(cxn, table_name):
@@ -160,6 +158,7 @@ def load_attributes(cxn, table_name):
 
 @trace
 def get_bounding_box(cxn, table_name, col_name):
+    arcpy.AddMessage("Debug_gbb")
     """This queries the PostGIS table for the native bounding box. """
     with closing(cxn.cursor()) as c:
         c.execute('SELECT ST_Extent("{col}") FROM "{table}";'.format(
@@ -302,7 +301,6 @@ def geoValidate(featLayer):
             if field.name == "LATITUDE": # WING: This always won't be reached.
                 if row.getValue(field.name) > 180 or row.getValue(field.name) < -180:
                     exList.append("Latitude has non-applicable values")
-
     if exList:
         raise Exception('; '.join(exList))
 
@@ -343,7 +341,6 @@ def fix_geoserver_info(gs_info):
         gs_info = gs_info._replace(
                 base_url=gs_info.base_url + '/rest'
                 )
-
     return gs_info
 
 
@@ -351,7 +348,6 @@ def fix_geoserver_info(gs_info):
 def create_datastore(cat, workspace, db_info, data_info):
     """This creates the datastore on geoserver. """
     datastore = cat.create_datastore(data_info.datastore, workspace)
-
     if datastore.connection_parameters is None:
         datastore.connection_parameters = {}
     datastore.connection_parameters.update(db_info._asdict())
@@ -432,10 +428,10 @@ def export_layer(db_info, gs_info, data_info, layer_name):
     create_postgis_layer(
             cat, wspace, datastore, layer, spaRef, native_crs, db_info,
             )
-    #try:
-     #   arcpy.DeleteFeatures_management(layer)
-    #except:
-     #   log(arcpy.GetMessages())
+    try:
+        arcpy.DeleteFeatures_management(layer)
+    except:
+        log(arcpy.GetMessages())
 
 
 def main():
@@ -461,6 +457,8 @@ def main():
                 user     = arcpy.GetParameterAsText(4),
                 password = arcpy.GetParameterAsText(5),
                 )
+        arcpy.AddMessage("Debug here tells if url is an issue")
+        #make sure url has http for http requests
         gs_info   = GeoserverInfo(
                 base_url = arcpy.GetParameterAsText(6),
                 #'http://geoserver.dev:8080/geoserver/web',
@@ -473,16 +471,16 @@ def main():
                 workspace = arcpy.GetParameterAsText(9),
                 namespace = arcpy.GetParameterAsText(10),
                 datastore = arcpy.GetParameterAsText(11),
-                #workspace = create_run_name(arcpy.GetParameterAsText(8)),
-                #namespace = create_run_name(arcpy.GetParameterAsText(9)),
-                #datastore = create_run_name(arcpy.GetParameterAsText(10)),
+                #workspace = create_run_name(arcpy.GetParameterAsText(8)) or sshPostGISws,
+                #namespace = create_run_name(arcpy.GetParameterAsText(9)) or uri:uva.sshPostGIS,
+                #datastore = create_run_name(arcpy.GetParameterAsText(10))or sshPostGISds ,
                 )
-
+        
         if not arcpy.Exists(featLayer):
             raise RuntimeError('error in feature layer passed')
 
         gs_info = fix_geoserver_info(gs_info)
-
+        
         export_layer(db_info, gs_info, data_info, featLayer)
     except:
         tb = traceback.format_exc()
