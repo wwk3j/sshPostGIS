@@ -1,0 +1,21 @@
+ExecuteError: Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'ERROR:  could not extend relation base/67390419/67390420: No space left on device
+A fatal error has occurred. Check the logfile above for details
+Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'no COPY in progress
+A fatal error has occurred. Check the logfile above for details
+Error encountered during writer shutdown
+A fatal error has occurred. Check the logfile above for details
+Tool execution failed.
+Failed to execute (QuickExport).
+
+
+<class 'arcgisscripting.ExecuteError'>: Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'ERROR:  could not extend relation base/67390419/67390420: No space left on device
+A fatal error has occurred. Check the logfile above for details
+Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'no COPY in progress
+A fatal error has occurred. Check the logfile above for details
+Error encountered during writer shutdown
+A fatal error has occurred. Check the logfile above for details
+Tool execution failed.
+Failed to execute (QuickExport).
+
+Failed to execute (sshPostGres).
+Failed at Mon Apr 02 15:51:36 2012 (Elapsed Time: 1 minutes 10 seconds)
