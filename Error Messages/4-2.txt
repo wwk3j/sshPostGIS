@@ -1,21 +1,20 @@
-ExecuteError: Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'ERROR:  could not extend relation base/67390419/67390420: No space left on device
-A fatal error has occurred. Check the logfile above for details
-Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'no COPY in progress
-A fatal error has occurred. Check the logfile above for details
-Error encountered during writer shutdown
-A fatal error has occurred. Check the logfile above for details
-Tool execution failed.
-Failed to execute (QuickExport).
+Executing: sshPostGres ne_10m_populated_places localhost 5432 april022012 vagrant vagrant http://localhost:8080/geoserver admin geoserver sshpostgisws_3 uri:uva.sshpostgisns sshpostgisds_3
+Start Time: Mon Apr 02 16:49:39 2012
+Running script sshPostGres...
+Debug here tells if url is an issue
+ERROR Traceback (most recent call last):
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 480, in main
+    export_layer(db_info, gs_info, data_info, featLayer)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 428, in export_layer
+    cat, wspace, datastore, layer, spaRef, native_crs, db_info,
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 186, in create_postgis_layer
+    attributes = load_attributes(cxn, name)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 155, in load_attributes
+    return [ pg_to_attribute(c, row, geometries) for row in col_infos ]
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 131, in pg_to_attribute
+    arcpy.AddMessage('attr_type %s' %(GEOM_TYPES[geometries[col_name]]))
+KeyError: 'objectid'
 
-
-<class 'arcgisscripting.ExecuteError'>: Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'ERROR:  could not extend relation base/67390419/67390420: No space left on device
-A fatal error has occurred. Check the logfile above for details
-Bulk copy failed on table 'public.ne_10m_populated_places_singlepart_250' using delimiter ':'. Error was 'no COPY in progress
-A fatal error has occurred. Check the logfile above for details
-Error encountered during writer shutdown
-A fatal error has occurred. Check the logfile above for details
-Tool execution failed.
-Failed to execute (QuickExport).
-
+<type 'exceptions.KeyError'>: 'objectid'
 Failed to execute (sshPostGres).
-Failed at Mon Apr 02 15:51:36 2012 (Elapsed Time: 1 minutes 10 seconds)
+Failed at Mon Apr 02 16:50:49 2012 (Elapsed Time: 1 minutes 10 seconds)
