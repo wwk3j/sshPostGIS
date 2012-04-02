@@ -50,7 +50,6 @@ GEOM_TYPES = {
         'POINTM'       : 'com.vividsolutions.jts.geom.Point',
         'POLYGON'      : 'com.vividsolutions.jts.geom.Polygon',
         'TRIANGLE'     : 'com.vividsolutions.jts.geom.Triangle',
-        # TODO: MULTILINESTRING, GEOMETRYCOLLECTION; may need edit depending on whether it takes or not
         }
 reEXTENT = re.compile(r'''
     ^ BOX \(
@@ -125,13 +124,15 @@ def pg_to_attribute(c, row, geometries):
 
     attr_type = ATTR_TYPES.get(type_name)
 
-    # TODO: Else branch might should print a warning if there's no attr_type
-    # found.
     if attr_type is None and col_name in geometries:
         attr_type = GEOM_TYPES[geometries[col_name]]
         is_geom   = True
+        arcpy.AddMessage('%s' % str(kwargs[col_name]))
+        arcpy.AddMessage('col_name=%s' %(col_name))
+        arcpy.AddMessage("is_geom is false and attr_type is still None column_name is %s\n," .format(col_name))
     else:
-        arcpy.AddMessage("is_geom is false and attr_type is still None") 
+        arcpy.AddMessage("is_geom is false and attr_type is still None column_name is %s\n, %(col_name)")
+        arcpy.AddMessage("this is the type_name: %s\n, %(type_name)")
     return {
             'name'     : col_name,
             'nillable' : nillable,
@@ -399,8 +400,8 @@ def make_export_params(db_info):
 @trace
 def quick_export(layer, db_info):
     """A small facade over the QuickExport tool. """
-    # arcpy.SetSeverityLevel(2)
-    # arcpy.CheckOutExtension("DataInteroperability")
+    arcpy.SetSeverityLevel(2)
+    arcpy.CheckOutExtension("DataInteroperability")
     params = make_export_params(db_info)
     arcpy.QuickExport_interop(layer, params)
 
@@ -447,9 +448,6 @@ def main():
 
     try:
         featLayer = arcpy.GetParameter(0)
-
-        # TODO: Need to prompt for Geoserver info, data info. NOTHING below should
-        # be hard-coded. There should be NO calls to create_run_name.
         db_info   = DbInfo(
                 host     = arcpy.GetParameterAsText(1),
                 port     = int(arcpy.GetParameterAsText(2)),
