@@ -1,0 +1,20 @@
+Executing: sshPostGres ne_10m_populated_places localhost 5432 april032012 vagrant vagrant http://localhost:8080/geoserver admin geoserver sshpostgisws_4 uri:uva.sshpostgisns3 sshpostgisds_4
+Start Time: Tue Apr 03 16:40:52 2012
+Running script sshPostGres...
+Debug here tells if url is an issue
+ERROR Traceback (most recent call last):
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 481, in main
+    export_layer(db_info, gs_info, data_info, featLayer)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 429, in export_layer
+    cat, wspace, datastore, layer, spaRef, native_crs, db_info,
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 187, in create_postgis_layer
+    attributes = load_attributes(cxn, name)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 156, in load_attributes
+    return [ pg_to_attribute(c, row, geometries) for row in col_infos ]
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 132, in pg_to_attribute
+    arcpy.AddMessage('attr_type %s' %(geometries.get[col_name]))
+TypeError: 'builtin_function_or_method' object is unsubscriptable
+
+<type 'exceptions.TypeError'>: 'builtin_function_or_method' object is unsubscriptable
+Failed to execute (sshPostGres).
+Failed at Tue Apr 03 16:42:45 2012 (Elapsed Time: 1 minutes 53 seconds)
