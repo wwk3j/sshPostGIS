@@ -1,20 +1,292 @@
-Executing: sshPostGres ne_10m_populated_places localhost 5432 april032012 vagrant vagrant http://localhost:8080/geoserver admin geoserver sshpostgisws_4 uri:uva.sshpostgisns3 sshpostgisds_4
-Start Time: Tue Apr 03 16:40:52 2012
+Executing: sshPostGres ne_10m_populated_places localhost 5432 april03152012 vagrant vagrant http://localhost:8080/geoserver admin geoserver sshpostgisws_6 uri:uva.sshpostgisns5 sshpostgisds_6
+Start Time: Tue Apr 03 16:51:45 2012
 Running script sshPostGres...
 Debug here tells if url is an issue
-ERROR Traceback (most recent call last):
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 481, in main
-    export_layer(db_info, gs_info, data_info, featLayer)
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 429, in export_layer
-    cat, wspace, datastore, layer, spaRef, native_crs, db_info,
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 187, in create_postgis_layer
-    attributes = load_attributes(cxn, name)
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 156, in load_attributes
-    return [ pg_to_attribute(c, row, geometries) for row in col_infos ]
-  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 132, in pg_to_attribute
-    arcpy.AddMessage('attr_type %s' %(geometries.get[col_name]))
-TypeError: 'builtin_function_or_method' object is unsubscriptable
-
-<type 'exceptions.TypeError'>: 'builtin_function_or_method' object is unsubscriptable
-Failed to execute (sshPostGres).
-Failed at Tue Apr 03 16:42:45 2012 (Elapsed Time: 1 minutes 53 seconds)
+attr_type None
+col_name is objectid
+type_name is int4
+attr_type None
+col_name is scalerank
+type_name is int2
+attr_type None
+col_name is natscale
+type_name is int2
+attr_type None
+col_name is labelrank
+type_name is int2
+attr_type None
+col_name is featurecla
+type_name is bpchar
+attr_type None
+col_name is name
+type_name is bpchar
+attr_type None
+col_name is namepar
+type_name is bpchar
+attr_type None
+col_name is namealt
+type_name is bpchar
+attr_type None
+col_name is diffascii
+type_name is int2
+attr_type None
+col_name is nameascii
+type_name is bpchar
+attr_type None
+col_name is adm0cap
+type_name is float8
+attr_type None
+col_name is capalt
+type_name is float8
+attr_type None
+col_name is capin
+type_name is bpchar
+attr_type None
+col_name is worldcity
+type_name is float8
+attr_type None
+col_name is megacity
+type_name is int2
+attr_type None
+col_name is sov0name
+type_name is bpchar
+attr_type None
+col_name is sov_a3
+type_name is bpchar
+attr_type None
+col_name is adm0name
+type_name is bpchar
+attr_type None
+col_name is adm0_a3
+type_name is bpchar
+attr_type None
+col_name is adm1name
+type_name is bpchar
+attr_type None
+col_name is iso_a2
+type_name is bpchar
+attr_type None
+col_name is note
+type_name is bpchar
+attr_type None
+col_name is latitude
+type_name is float8
+attr_type None
+col_name is longitude
+type_name is float8
+attr_type None
+col_name is changed
+type_name is float8
+attr_type None
+col_name is namediff
+type_name is int2
+attr_type None
+col_name is diffnote
+type_name is bpchar
+attr_type None
+col_name is pop_max
+type_name is int4
+attr_type None
+col_name is pop_min
+type_name is int4
+attr_type None
+col_name is pop_other
+type_name is int4
+attr_type None
+col_name is geonameid
+type_name is float8
+attr_type None
+col_name is meganame
+type_name is bpchar
+attr_type None
+col_name is ls_name
+type_name is bpchar
+attr_type None
+col_name is ls_match
+type_name is int2
+attr_type None
+col_name is checkme
+type_name is int2
+attr_type None
+col_name is max_pop10
+type_name is float8
+attr_type None
+col_name is max_pop20
+type_name is float8
+attr_type None
+col_name is max_pop50
+type_name is float8
+attr_type None
+col_name is max_pop300
+type_name is float8
+attr_type None
+col_name is max_pop310
+type_name is float8
+attr_type None
+col_name is max_natsca
+type_name is float8
+attr_type None
+col_name is min_areakm
+type_name is float8
+attr_type None
+col_name is max_areakm
+type_name is float8
+attr_type None
+col_name is min_areami
+type_name is float8
+attr_type None
+col_name is max_areami
+type_name is float8
+attr_type None
+col_name is min_perkm
+type_name is float8
+attr_type None
+col_name is max_perkm
+type_name is float8
+attr_type None
+col_name is min_permi
+type_name is float8
+attr_type None
+col_name is max_permi
+type_name is float8
+attr_type None
+col_name is min_bbxmin
+type_name is float8
+attr_type None
+col_name is max_bbxmin
+type_name is float8
+attr_type None
+col_name is min_bbxmax
+type_name is float8
+attr_type None
+col_name is max_bbxmax
+type_name is float8
+attr_type None
+col_name is min_bbymin
+type_name is float8
+attr_type None
+col_name is max_bbymin
+type_name is float8
+attr_type None
+col_name is min_bbymax
+type_name is float8
+attr_type None
+col_name is max_bbymax
+type_name is float8
+attr_type None
+col_name is mean_bbxc
+type_name is float8
+attr_type None
+col_name is mean_bbyc
+type_name is float8
+attr_type None
+col_name is compare
+type_name is int2
+attr_type None
+col_name is gn_ascii
+type_name is bpchar
+attr_type None
+col_name is feature_cl
+type_name is bpchar
+attr_type None
+col_name is feature_co
+type_name is bpchar
+attr_type None
+col_name is admin1_cod
+type_name is float8
+attr_type None
+col_name is gn_pop
+type_name is float8
+attr_type None
+col_name is elevation
+type_name is float8
+attr_type None
+col_name is gtopo30
+type_name is float8
+attr_type None
+col_name is timezone
+type_name is bpchar
+attr_type None
+col_name is geonamesno
+type_name is bpchar
+attr_type None
+col_name is un_fid
+type_name is int4
+attr_type None
+col_name is un_adm0
+type_name is bpchar
+attr_type None
+col_name is un_lat
+type_name is float8
+attr_type None
+col_name is un_long
+type_name is float8
+attr_type None
+col_name is pop1950
+type_name is float8
+attr_type None
+col_name is pop1955
+type_name is float8
+attr_type None
+col_name is pop1960
+type_name is float8
+attr_type None
+col_name is pop1965
+type_name is float8
+attr_type None
+col_name is pop1970
+type_name is float8
+attr_type None
+col_name is pop1975
+type_name is float8
+attr_type None
+col_name is pop1980
+type_name is float8
+attr_type None
+col_name is pop1985
+type_name is float8
+attr_type None
+col_name is pop1990
+type_name is float8
+attr_type None
+col_name is pop1995
+type_name is float8
+attr_type None
+col_name is pop2000
+type_name is float8
+attr_type None
+col_name is pop2005
+type_name is float8
+attr_type None
+col_name is pop2010
+type_name is float8
+attr_type None
+col_name is pop2015
+type_name is float8
+attr_type None
+col_name is pop2020
+type_name is float8
+attr_type None
+col_name is pop2025
+type_name is float8
+attr_type None
+col_name is pop2050
+type_name is float8
+attr_type None
+col_name is cityalt
+type_name is bpchar
+attr_type None
+col_name is popdiff
+type_name is int2
+attr_type None
+col_name is popperc
+type_name is float4
+attr_type None
+col_name is ls_gross
+type_name is int2
+attr_type None
+col_name is orig_fid
+type_name is int4
+Debug_gbb
+Completed script sshPostGres...
+Succeeded at Tue Apr 03 16:52:56 2012 (Elapsed Time: 1 minutes 11 seconds)
