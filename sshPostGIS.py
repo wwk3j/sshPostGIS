@@ -127,12 +127,11 @@ def pg_to_attribute(c, row, geometries):
     if attr_type is None and col_name in geometries:
         attr_type = GEOM_TYPES[geometries[col_name]]
         is_geom   = True
-        arcpy.AddMessage('%s' % str(kwargs[col_name]))
-        arcpy.AddMessage('col_name=%s' %(col_name))
-        arcpy.AddMessage("is_geom is false and attr_type is still None column_name is %s\n," .format(col_name))
     else:
-        arcpy.AddMessage("is_geom is false and attr_type is still None column_name is %s\n, %(col_name)")
-        arcpy.AddMessage("this is the type_name: %s\n, %(type_name)")
+        
+        arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
+        arcpy.AddMessage('col_name is %s' %(col_name)) 
+        arcpy.AddMessage('type_name is %s' %(type_name)) 
     return {
             'name'     : col_name,
             'nillable' : nillable,
@@ -288,7 +287,7 @@ def geoValidate(featLayer):
             if field.name == "Shape":
                 if row.getValue(field.name) == "Polygon":
                     continue
-            if field.name == "Shape_Area":              # WING: This will always be false (see two lines up). What are you trying to test for?
+            if field.name == "Shape_Area":              
                 if row.getValue(field.name) == 0:
                     exList.append("zero area polygon")
             elif field.name == "Polyline":
@@ -299,7 +298,7 @@ def geoValidate(featLayer):
             if field.name == "LONGITUDE":
                 if row.getValue(field.name) > 90 or row.getValue(field.name) < -90:
                     exList.append("Longitude has non-applicable values")
-            if field.name == "LATITUDE": # WING: This always won't be reached.
+            if field.name == "LATITUDE": 
                 if row.getValue(field.name) > 180 or row.getValue(field.name) < -180:
                     exList.append("Latitude has non-applicable values")
     if exList:
