@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml>
+   <Folder>
+      <NetworkLink>
+         <name>sshapr05ws:ne_10m_populated_places_singlepart_267</name>
+         <open>1</open>
+         <visibility>1</visibility>
+         <Url>
+            <href><![CDATA[http://localhost:8080/geoserver/sshapr05ws/wms?height=1024&width=1024&layers=sshapr05ws:ne_10m_populated_places_singlepart_267&request=GetMap&service=wms&styles=point&format_options=SUPEROVERLAY:false;KMPLACEMARK:false;KMSCORE:40;KMATTR:true;&srs=EPSG:4326&format=application/vnd.google-earth.kmz&transparent=false&version=1.1.1]]></href>
+            <viewRefreshMode>onStop</viewRefreshMode>
+            <viewRefreshTime>1</viewRefreshTime>
+         </Url>
+      </NetworkLink>
+      <LookAt>
+         <longitude>-179.90797159662026</longitude>
+         <latitude>4.717019090357979</latitude>
+         <altitude>0</altitude>
+         <range>1.2452675445863849E7</range>
+         <tilt>0</tilt>
+         <heading>0</heading>
+         <altitudeMode>clampToGround</altitudeMode>
+      </LookAt>
+   </Folder>
+</kml>
