@@ -16,6 +16,8 @@ from functools import wraps
 import re
 import time
 import traceback
+import pprint
+from pprint import pformat
 
 import arcpy
 from geoserver.catalog import Catalog
@@ -127,11 +129,15 @@ def pg_to_attribute(c, row, geometries):
     if attr_type is None and col_name in geometries:
         attr_type = GEOM_TYPES[geometries[col_name]]
         is_geom   = True
-    else:
-        
+        for pair in geometries.items():
+            arcpy.AddMessage('%r => %r' % pair)
         arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
         arcpy.AddMessage('col_name is %s' %(col_name)) 
-        arcpy.AddMessage('type_name is %s' %(type_name)) 
+        arcpy.AddMessage('type_name is %s' %(type_name))
+    elif col_name in geometries:
+        arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
+        arcpy.AddMessage('col_name is %s' %(col_name)) 
+        arcpy.AddMessage('type_name is %s' %(type_name))
     return {
             'name'     : col_name,
             'nillable' : nillable,
@@ -185,6 +191,7 @@ def create_postgis_layer(
     """This creates and returns a new layer. """
     with closing(psycopg2.connect(**db_info._asdict())) as cxn:
         attributes = load_attributes(cxn, name)
+        arcpy.AddMessage("attributes: %s " %pformat(attributes))
         for attr in attributes:
             if attr['is_geom']:
                 bounds = get_bounding_box(cxn, name, attr['name'])
