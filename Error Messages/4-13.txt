@@ -1,0 +1,78 @@
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 494, in main
+    export_layer(db_info, gs_info, data_info, featLayer)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 436, in export_layer
+    datastore = create_datastore(cat, wspace, db_info, data_info)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 374, in create_datastore
+    cat.save(datastore)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\catalog.py", line 133, in save
+    message = obj.message()
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\support.py", line 146, in message
+    self.serialize(builder)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\support.py", line 141, in serialize
+    writer(builder, self.dirty[k])
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\support.py", line 114, in write
+    builder.end("entry")
+  File "C:\Python26\ArcGIS10.0\Lib\xml\etree\ElementTree.py", line 1092, in end
+    self._flush()
+  File "C:\Python26\ArcGIS10.0\Lib\xml\etree\ElementTree.py", line 1049, in _flush
+    text = string.join(self._data, "")
+  File "C:\Python26\ArcGIS10.0\Lib\string.py", line 318, in join
+    return sep.join(words)
+TypeError: sequence item 0: expected string, bool found
+
+<type 'exceptions.TypeError'>: sequence item 0: expected string, bool found
+Failed to execute (sshPostGres).
+
+1 .originally I tried to use lower case true/false, but it threw this error so I changed them yet I still got the same error. 
+
+datastore.connection_parameters.update({
+        'passwd' : db_info.password,
+        'port'   : str(db_info.port),
+        'schema' : 'public',
+        'dbtype' : 'postgis',
+        'Loose bbox' : True, 
+        'Expose primary keys' : False,
+        'prepardStatements' : False,
+        'Estimated extends' : False,
+        'min connections' : 4,
+        'max connections' : 10,
+        })
+
+2. then I made them strings: 
+
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 494, in main
+    export_layer(db_info, gs_info, data_info, featLayer)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 436, in export_layer
+    datastore = create_datastore(cat, wspace, db_info, data_info)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 374, in create_datastore
+    cat.save(datastore)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\catalog.py", line 133, in save
+    message = obj.message()
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\support.py", line 146, in message
+    self.serialize(builder)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\support.py", line 141, in serialize
+    writer(builder, self.dirty[k])
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\support.py", line 114, in write
+    builder.end("entry")
+  File "C:\Python26\ArcGIS10.0\Lib\xml\etree\ElementTree.py", line 1092, in end
+    self._flush()
+  File "C:\Python26\ArcGIS10.0\Lib\xml\etree\ElementTree.py", line 1049, in _flush
+    text = string.join(self._data, "")
+  File "C:\Python26\ArcGIS10.0\Lib\string.py", line 318, in join
+    return sep.join(words)
+TypeError: sequence item 0: expected string, int found
+
+<type 'exceptions.TypeError'>: sequence item 0: expected string, int found
+
+    datastore.connection_parameters.update({
+        'passwd' : db_info.password,
+        'port'   : str(db_info.port),
+        'schema' : 'public',
+        'dbtype' : 'postgis',
+        'Loose bbox' : 'true', 
+        'Expose primary keys' : 'false',
+        'prepardStatements' : 'false',
+        'Estimated extends' : 'false',
+        'min connections' : 4,
+        'max connections' : 10,
+        })
