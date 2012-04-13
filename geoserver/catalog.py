@@ -211,7 +211,11 @@ class Catalog(object):
     has_geom = False
     attributes_block = "<attributes>"
     for attr in attributes:
-        has_geom = (has_geom or
+        #change the has_geom part to some sort of variation of is_geom
+        #if has_geom is None:
+            #has_geom = (is_geom or
+             #       attr['binding'].startswith('com.vividsolutions.jts.geom'))
+        has_geom = (True or
                     attr['binding'].startswith('com.vividsolutions.jts.geom'))
         attributes_block += (
                 '<attribute>'
@@ -256,10 +260,11 @@ class Catalog(object):
             "{attributes}"
             #"{latLonBoundingBox}"
             #"{nativeBoundingBox}"
-            "{nativeCRS}"
+            #"{nativeCRS}"
             "</featureType>").format(name=name, nativeName=nativeName,
                                         title=layerTitle, srs=srs,
-                                        attributes=attributes_block, latLonBoundingBox=llbbxml, nativeBoundingBox=natbbxml, nativeCRS=projxml)
+                                        attributes=attributes_block)
+    #, latLonBoundingBox=llbbxml, nativeBoundingBox=natbbxml, nativeCRS=projxml
     headers = { "Content-Type": "application/xml" }
     url = '%s/workspaces/%s/datastores/%s/featuretypes' % (self.service_url, workspace, store)
 
