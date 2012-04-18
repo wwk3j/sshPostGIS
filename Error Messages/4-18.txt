@@ -1,4 +1,8 @@
-This Test was with a different projection and srs and it rendered these results. The previous ones that succeeded were of a the NAD projection and srs of 3240
+This Test was with a transformed projection and srs and it rendered these results. The previous ones that succeeded were of a the NAD projection and srs of 3240
+essentially I added this layer into the data frame and it prompted me to transform the projection so that it would fit with the current data frame and it rendered me an error.
+
+What we can either do it attempt to catch this kind of thing or simply specify that the projection type of shapefiles entered need to be the same consistently within that data frame or create
+a new data frame. Currently unsure of how to catch this, but may look into it. 
 
 'geom' => 'MULTILINESTRING'
 attr_type MULTILINESTRING
