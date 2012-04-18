@@ -1,0 +1,66 @@
+'geom' => 'MULTILINESTRING'
+attr_type MULTILINESTRING
+col_name is geom
+type_name is geometry
+attributes: [{'binding': 'java.lang.Integer',
+  'is_geom': False,
+  'name': 'objectid',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'fnode_',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'tnode_',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'lpoly_',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'rpoly_',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'length',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'bound_',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'bound_id',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Integer',
+  'is_geom': False,
+  'name': 'orig_fid',
+  'nillable': 'YES'},
+ {'binding': 'java.lang.Double',
+  'is_geom': False,
+  'name': 'shape_length',
+  'nillable': 'YES'},
+ {'binding': 'com.vividsolutions.jts.geom.MultiLineString',
+  'is_geom': True,
+  'name': 'geom',
+  'nillable': 'YES'}] 
+Debug_gbb
+ERROR Traceback (most recent call last):
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 494, in main
+    export_layer(db_info, gs_info, data_info, featLayer)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 442, in export_layer
+    cat, wspace, datastore, layer, spaRef, native_crs, db_info,
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\sshPostGIS.py", line 208, in create_postgis_layer
+    srs, native_crs
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\geoserver\catalog.py", line 272, in create_postgres_layer
+    assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\nURL: ' + url + ' =>\n' + xml
+AssertionError: Tried to create PostGIS Layer but got 500: :This is unexpected, the layer seems to be mis-configured
+URL: http://localhost:8080/geoserver/rest/workspaces/apr18ws/datastores/apr18ds/featuretypes =>
+<featureType><name>JaziraSyriaBoundary_singlepart</name><nativeName>JaziraSyriaBoundary_singlepart</nativeName><title>JaziraSyriaBoundary_singlepart</title><srs>EPSG:104000</srs><attributes><attribute><name>objectid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>fnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>tnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>lpoly_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>rpoly_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>length</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_id</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>orig_fid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>shape_length</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>geom</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>com.vividsolutions.jts.geom.MultiLineString</binding></attribute></attributes></featureType>
+
+<type 'exceptions.AssertionError'>: Tried to create PostGIS Layer but got 500: :This is unexpected, the layer seems to be mis-configured
+URL: http://localhost:8080/geoserver/rest/workspaces/apr18ws/datastores/apr18ds/featuretypes =>
+<featureType><name>JaziraSyriaBoundary_singlepart</name><nativeName>JaziraSyriaBoundary_singlepart</nativeName><title>JaziraSyriaBoundary_singlepart</title><srs>EPSG:104000</srs><attributes><attribute><name>objectid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>fnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>tnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>lpoly_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>rpoly_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>length</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_id</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>orig_fid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>shape_length</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>geom</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>com.vividsolutions.jts.geom.MultiLineString</binding></attribute></attributes></featureType>
+Failed to execute (sshPostGres).
