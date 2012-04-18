@@ -1,5 +1,5 @@
 
-*********************************************************************READ ME FILE*******************************************************************
+********************************************READ ME FILE********************************************
 
 File Date: April 17, 2012
 File Name: arcmap2psql2geoserver
@@ -28,14 +28,16 @@ Known Issues:
 How to Use:
 Click the script tool and fill in accordingly the fields dealing with ArcMap first, then PostGis, and finally GeoServer. 
 
-featLayer-a shapefile currently open within the table of contents or what is known as a layer panel (not technically a layer)
+featLayer-a shapefile currently open within the table of contents or what is known as a layer panel 
 Note: 
 Make sure to only input shapefiles, or else the dialog progress screen will state an improper input message. 
+Make sure shapefiles are a maximum of 12 characters, start with a letter, and alphanumeric. 
 Feature classes will be incompatible
 
 server-where the current connection between the PostGis database will be facilitated. 
 Note: 
-This is generally done via localhost, however it may also be done via the web interface of PostGis though modifications will be needed.
+This is generally done via localhost, 
+however it may also be done via the web interface of PostGis though modifications will be needed.
 
 portnumber- directly related to the server if localhost should be used.
 
@@ -45,7 +47,8 @@ Note: be sure not to start this off with a number or anything non alphabetical
 user && password- the necessary security credentials for the PostGis database
 
 base_url-the url for geoserver
-Note: may be localhost with the portnumber specified from depending on Tomcat configurations, generally 8080 or the geoserver web interface.
+Note: may be localhost with the portnumber specified from depending on Tomcat configurations
+Generally 8080 or the geoserver web interface.
 
 gs_user-the username for the geoserver
 
