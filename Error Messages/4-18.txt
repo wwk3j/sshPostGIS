@@ -1,3 +1,5 @@
+This Test was with a different projection and srs and it rendered these results. The previous ones that succeeded were of a the NAD projection and srs of 3240
+
 'geom' => 'MULTILINESTRING'
 attr_type MULTILINESTRING
 col_name is geom
