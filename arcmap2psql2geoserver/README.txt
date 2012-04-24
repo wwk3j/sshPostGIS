@@ -12,6 +12,8 @@ System Prerequisites: ArcGIS 10 or above (therefore Windows XP and above), *GeoS
 
 *If geoserver and postgres are not installed, 
 the latest versions can be obtained here: http://workshops.opengeo.org/stack-intro/install-suite.html
+Note*: If using tomcat6 for geoserver through a virtual machine there is a chance of assertion error 500, 
+so if possible install the geoserver binary over utilizing it from a virtual machine, or else HTTP errors might occur. 
 
 Installation Instructions:
 1. Unzip the file
@@ -59,3 +61,6 @@ Workspace-the workspace for the geoserver
 Namespace-the namespace for the geoserver
 Note: generally a url web presence of that shapefile, i.e. where it was obtained, etc. 
 Datastore-the datastore name for the shapefile
+
+Troubleshooting: 
+TBD
