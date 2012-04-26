@@ -462,53 +462,52 @@ def main():
         "Accept": "text/html; charset=utf-8"}
     refsys = get_srs(arcpy.GetParameterAsText(0))    
     url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([srs[0] for srs in refsys])
-    response, content = self.http.request(url, "GET", headers=headers)
-    if response.status = 404:
+    response, content = http.request(url, "GET", headers=headers)
+    if response.status == 400:
         raise FailedRequestError("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
     else:
-        continue
     # Clobber the log function to send everything to arcpy.AddMessage.
-    global log
-    log = arcpy_log
+        global log
+        log = arcpy_log
 
-    try:
-        featLayer = arcpy.GetParameter(0)
-        db_info   = DbInfo(
-                host     = arcpy.GetParameterAsText(1),
-                port     = int(arcpy.GetParameterAsText(2)),
-                database = arcpy.GetParameterAsText(3),
-                user     = arcpy.GetParameterAsText(4),
-                password = arcpy.GetParameterAsText(5),
-                )
-        arcpy.AddMessage("Debug here tells if url is an issue")
+        try:
+            featLayer = arcpy.GetParameter(0)
+            db_info   = DbInfo(
+                    host     = arcpy.GetParameterAsText(1),
+                    port     = int(arcpy.GetParameterAsText(2)),
+                    database = arcpy.GetParameterAsText(3),
+                    user     = arcpy.GetParameterAsText(4),
+                    password = arcpy.GetParameterAsText(5),
+                    )
+            arcpy.AddMessage("Debug here tells if url is an issue")
         #make sure url has http for http requests
-        gs_info   = GeoserverInfo(
-                base_url = arcpy.GetParameterAsText(6),
+            gs_info   = GeoserverInfo(
+                    base_url = arcpy.GetParameterAsText(6),
                 #'http://geoserver.dev:8080/geoserver/web',
-                user = arcpy.GetParameterAsText(7),
+                    user = arcpy.GetParameterAsText(7),
                 #'admin', 
-                password = arcpy.GetParameterAsText(8),
+                    password = arcpy.GetParameterAsText(8),
                 #'geoserver',
-                )
-        data_info = DataInfo(
-                workspace = arcpy.GetParameterAsText(9),
-                namespace = arcpy.GetParameterAsText(10),
-                datastore = arcpy.GetParameterAsText(11),
+                    )
+            data_info = DataInfo(
+                    workspace = arcpy.GetParameterAsText(9),
+                    namespace = arcpy.GetParameterAsText(10),
+                    datastore = arcpy.GetParameterAsText(11),
                 #workspace = create_run_name(arcpy.GetParameterAsText(8)) or sshPostGISws,
                 #namespace = create_run_name(arcpy.GetParameterAsText(9)) or uri:uva.sshPostGIS,
                 #datastore = create_run_name(arcpy.GetParameterAsText(10))or sshPostGISds ,
-                )
+                    )
         
-        if not arcpy.Exists(featLayer):
-            raise RuntimeError('error in feature layer passed')
+            if not arcpy.Exists(featLayer):
+                raise RuntimeError('error in feature layer passed')
 
-        gs_info = fix_geoserver_info(gs_info)
+            gs_info = fix_geoserver_info(gs_info)
         
-        export_layer(db_info, gs_info, data_info, featLayer)
-    except:
-        tb = traceback.format_exc()
-        log('ERROR', tb)
-        raise
+            export_layer(db_info, gs_info, data_info, featLayer)
+        except:
+            tb = traceback.format_exc()
+            log('ERROR', tb)
+            raise
 
 
 if __name__ == '__main__':
