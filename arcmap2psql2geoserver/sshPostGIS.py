@@ -18,6 +18,8 @@ import time
 import traceback
 import pprint, httplib2
 from pprint import pformat
+from urlparse import urlparse
+from urllib import urlencode
 
 import arcpy
 from geoserver.catalog import Catalog
@@ -458,11 +460,11 @@ def main():
 
     """
     #check if the srs is applicable against the list of geoserver supported srs
-    headers = { "Content-Type": "text/html; charset=utf-8",
-        "Accept": "text/html; charset=utf-8"}
+    headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
     refsys = get_srs(arcpy.GetParameterAsText(0))    
     url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([srs[0] for srs in refsys])
-    response, content = http.request(url, "GET", headers=headers)
+    h = httplib2.Http(".cache")
+    response, content = h.request(url, "GET", headers=headers)
     if response.status == 400:
         raise FailedRequestError("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
     else:
