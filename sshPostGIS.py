@@ -41,8 +41,13 @@ ATTR_TYPES = {
         'float8'       : 'java.lang.Double',
         'int2'         : 'java.lang.Short',
         'int4'         : 'java.lang.Integer',
+        'varchar'      : 'java.lang.String',
+        'int8'         : 'java.lang.Integer',
         }
 GEOM_TYPES = {
+        'ENVELOPE' : 'com.vividsolutions.jts.geom.Envelope',
+        'COORDINATEARRAYS' : 'com.vividsolutions.jts.geom.CoordinateArrays', 
+        'GEOMETRYCOLLECTION' : 'com.vividsolutions.jts.geom.GeometryCollection',
         'LINESEGMENT'  : 'com.vividsolutions.jts.geom.LineSegment',
         'LINESTRING'   : 'com.vividsolutions.jts.geom.LineString',
         'MULTIPOINT'   : 'com.vividsolutions.jts.geom.MultiPoint',
@@ -201,7 +206,8 @@ def create_postgis_layer(
 
     native = name
     title  = name
-
+    #added a print statement to view srs
+    arcpy.AddMessage("here it is %s" %(srs))
     return cat.create_postgres_layer(
             wspace.name, dstore.name, name, native, title, srs, attributes,
             bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax,
@@ -358,12 +364,18 @@ def create_datastore(cat, workspace, db_info, data_info):
     if datastore.connection_parameters is None:
         datastore.connection_parameters = {}
     datastore.connection_parameters.update(db_info._asdict())
-    datastore.connection_parameters.update(dict(
-        passwd = db_info.password,
-        port   = str(db_info.port),
-        schema = 'public',
-        dbtype = 'postgis',
-        ))
+    datastore.connection_parameters.update({
+        'passwd' : db_info.password,
+        'port'   : str(db_info.port),
+        'schema' : 'public',
+        'dbtype' : 'postgis',
+        'Loose bbox' : 'true', 
+        'Expose primary keys' : 'false',
+        'prepardStatements' : 'false',
+        'Estimated extends' : 'false',
+        'min connections' : '4',
+        'max connections' : '10',
+        })
 
     cat.save(datastore)
     return datastore

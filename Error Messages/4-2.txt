@@ -1,3 +1,7 @@
+what is the value of attr_type (assigned on line 128) give you?
+or rather, what's the value of geometries[col_name]
+once you know that, you need to add it to GEOM_TYPES, i think
+
 Executing: sshPostGres ne_10m_populated_places localhost 5432 april022012 vagrant vagrant http://localhost:8080/geoserver admin geoserver sshpostgisws_3 uri:uva.sshpostgisns sshpostgisds_3
 Start Time: Mon Apr 02 16:49:39 2012
 Running script sshPostGres...

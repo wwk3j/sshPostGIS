@@ -8,6 +8,36 @@ File "C:\Documents and Settings\geostaff\Desktop\PostGIS\arcmap2psql2geoserver\s
     assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\nURL: ' + url + ' =>\n' + xml
 AssertionError: Tried to create PostGIS Layer but got 500: :This is unexpected, the layer seems to be mis-configured
 URL: http://localhost:8080/geoserver/rest/workspaces/apr_24ws/datastores/apr_24ds/featuretypes =>
-<featureType><name>JaziraSyriaBoundary_singlepart_2</name><nativeName>JaziraSyriaBoundary_singlepart_2</nativeName><title>JaziraSyriaBoundary_singlepart_2</title><srs>EPSG:104000</srs><attributes><attribute><name>objectid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>fnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>tnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>lpoly_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>rpoly_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>length</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_id</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>orig_fid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>shape_length</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>geom</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>com.vividsolutions.jts.geom.MultiLineString</binding></attribute></attributes></featureType>
+<featureType><name>JaziraSyriaBoundary_singlepart_2</name><nativeName>JaziraSyriaBoundary_singlepart_2</nativeName><title>JaziraSyriaBoundary_singlepart_2</title>
+
+<srs>EPSG:104000</srs><attributes>
+<attribute><name>objectid</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute>
+<name>fnode_</name><minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>tnode_</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>lpoly_</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>rpoly_</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>length</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>bound_id</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>orig_fid</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Integer</binding></attribute><attribute><name>shape_length</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>java.lang.Double</binding></attribute><attribute><name>geom</name>
+<minOccurs>0</minOccurs><maxOccurs>1</maxOccurs><nillable>YES</nillable><binding>com.vividsolutions.jts.geom.MultiLineString</binding></attribute></attributes></featureType>
 
 <type 'exceptions.AssertionError'>: Tried to create PostGIS Layer but got 500: :This is unexpected, the layer seems to be mis-configured
+
+base_url=arcpy.GetParameter(6)
+srs = arcpy.GetParameter()
+test_srs = "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=EPSG:2000
+
+http://localhost:8080/geoserver/web/?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=EPSG:2000
+
+    
+    url = '%s/workspaces/%s/datastores/%s/featuretypes' % (self.service_url, workspace, store)
+
+    headers, response = self.http.request(url, "POST", xml, headers)
+    assert 200 <= headers.status < 300, "Tried to create PostGIS Layer but got " + str(headers.status) + ": " + response + '\nURL: ' + url + ' =>\n' + xml
+    self._cache.clear()
+    return self.get_resource(name)
+
+
+

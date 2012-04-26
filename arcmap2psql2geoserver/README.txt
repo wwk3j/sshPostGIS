@@ -35,6 +35,7 @@ Note:
 Make sure to only input shapefiles, or else the dialog progress screen will state an improper input message. 
 Make sure shapefiles are a maximum of 12 characters, start with a letter, and alphanumeric. 
 Feature classes will be incompatible
+If the shapefile has an epsg or wkid unsupported by geoserver, it will respond back with the 404 error. 
 
 Server-where the current connection between the PostGis database will be facilitated. 
 Note: 

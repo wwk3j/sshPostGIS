@@ -382,3 +382,6 @@
   'is_geom': True,
   'name': 'geom',
   'nillable': 'YES'}] 
+
+
+i think that you'd just change the current check that uses endswith to one that uses the is_geom dict entry

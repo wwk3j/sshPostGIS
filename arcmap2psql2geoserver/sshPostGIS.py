@@ -16,7 +16,7 @@ from functools import wraps
 import re
 import time
 import traceback
-import pprint
+import pprint, httplib2
 from pprint import pformat
 
 import arcpy
@@ -212,7 +212,6 @@ def create_postgis_layer(
             bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax,
             srs, native_crs
             )
-
 
 @trace
 def find_new_layer(layer_name):
@@ -458,7 +457,16 @@ def main():
     export.
 
     """
-
+    #check if the srs is applicable against the list of geoserver supported srs
+    headers = { "Content-Type": "text/html; charset=utf-8",
+        "Accept": "text/html; charset=utf-8"}
+    refsys = get_srs(arcpy.GetParameterAsText(0))    
+    url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([srs[0] for srs in refsys])
+    response, content = self.http.request(url, "GET", headers=headers)
+    if response.status = 404:
+        raise FailedRequestError("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
+    else:
+        continue
     # Clobber the log function to send everything to arcpy.AddMessage.
     global log
     log = arcpy_log
