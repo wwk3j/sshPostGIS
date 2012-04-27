@@ -21,7 +21,7 @@ from pprint import pformat
 from urlparse import urlparse
 from urllib import urlencode
 
-import arcpy
+import arcpy, codecs
 from geoserver.catalog import Catalog
 import psycopg2, psycopg2.extensions
 
@@ -465,14 +465,15 @@ def main():
         headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
         refsys = get_srs(arcpy.GetParameterAsText(0))    
         url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([srs[0] for srs in refsys])
-        h = httplib2.Http(".cache")
+        h = httplib2.Http()
         response, content = h.request(url, "GET", headers=headers)
         if response.status == 400:
-            raise FailedRequestError("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
+            arcpy.AddMessage("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
         else:
             arcpy.AddMessage("works")
     except:
             arcpy.AddMessage(str(traceback.format_exc()))
+            arcpy.AddMessage(codecs.__file__)
 
     # Clobber the log function to send everything to arcpy.AddMessage.
     global log
