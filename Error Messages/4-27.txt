@@ -1,0 +1,13 @@
+Running script arcmap2psql2gs...
+Traceback (most recent call last):
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\arcmap2psql2geoserver\sshPostGIS.py", line 469, in main
+    response, content = h.request(url, "GET", headers=headers)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\arcmap2psql2geoserver\httplib2\__init__.py", line 1438, in request
+    cached_value = self.cache.get(cachekey)
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\arcmap2psql2geoserver\httplib2\__init__.py", line 695, in get
+    cacheFullPath = os.path.join(self.cache, self.safe(key))
+  File "C:\Documents and Settings\geostaff\Desktop\PostGIS\arcmap2psql2geoserver\httplib2\__init__.py", line 235, in safename
+    filename = filename.decode('utf-8')
+  File "C:\Python26\ArcGIS10.0\Lib\encodings\utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+AttributeError: 'NoneType' object has no attribute 'utf_8_decode'
