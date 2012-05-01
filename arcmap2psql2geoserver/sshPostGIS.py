@@ -138,12 +138,12 @@ def pg_to_attribute(c, row, geometries):
         is_geom   = True
         for pair in geometries.items():
             arcpy.AddMessage('%r => %r' % pair)
-        arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
-        arcpy.AddMessage('col_name is %s' %(col_name)) 
-        arcpy.AddMessage('type_name is %s' %(type_name))
+        #arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
+        #arcpy.AddMessage('col_name is %s' %(col_name)) 
+        #arcpy.AddMessage('type_name is %s' %(type_name))
     elif col_name in geometries:
-        arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
-        arcpy.AddMessage('col_name is %s' %(col_name)) 
+        #arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
+        #arcpy.AddMessage('col_name is %s' %(col_name)) 
         arcpy.AddMessage('type_name is %s' %(type_name))
     return {
             'name'     : col_name,
@@ -463,17 +463,20 @@ def main():
     #check if the srs is applicable against the list of geoserver supported srs
     try: 
         headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
-        refsys = get_srs(arcpy.GetParameterAsText(0))    
-        url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([srs[0] for srs in refsys])
+        refsys = get_srs(arcpy.GetParameterAsText(0))
+        #for srs in refsys:
+        url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([refsys[0:1] for srs in refsys])
         h = httplib2.Http()
         response, content = h.request(url, "GET", headers=headers)
-        if response.status == 400:
+        if response.status != 200:
             arcpy.AddMessage("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
+            return
         else:
             arcpy.AddMessage("works")
     except:
             arcpy.AddMessage(str(traceback.format_exc()))
             arcpy.AddMessage(codecs.__file__)
+            
 
     # Clobber the log function to send everything to arcpy.AddMessage.
     global log
