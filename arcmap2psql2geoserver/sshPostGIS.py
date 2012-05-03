@@ -465,7 +465,7 @@ def main():
         headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
         refsys = get_srs(arcpy.GetParameterAsText(0))
         #for srs in refsys:
-        url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str([refsys[0:1] for srs in refsys])
+        url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str(refsys[0])
         h = httplib2.Http()
         response, content = h.request(url, "GET", headers=headers)
         if response.status != 200:
