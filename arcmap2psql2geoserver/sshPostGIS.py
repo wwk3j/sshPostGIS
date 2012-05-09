@@ -13,8 +13,8 @@
 from collections import namedtuple
 from contextlib import closing
 from functools import wraps
-import re, sys
-import time
+import re, sys, exceptions
+import time, epsg_list_preprocess
 import traceback
 import pprint, httplib2
 from pprint import pformat
@@ -461,21 +461,33 @@ def main():
     """
     
     #check if the srs is applicable against the list of geoserver supported srs
-    try: 
-        headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
-        refsys = get_srs(arcpy.GetParameterAsText(0))
-        #for srs in refsys:
-        url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str(refsys[0])
-        h = httplib2.Http()
-        response, content = h.request(url, "GET", headers=headers)
-        if response.status != 200:
-            arcpy.AddMessage("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
-            return
-        else:
-            arcpy.AddMessage("works")
-    except:
-            arcpy.AddMessage(str(traceback.format_exc()))
-            arcpy.AddMessage(codecs.__file__)
+
+    #headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
+    #for srs in refsys:
+    refsys = get_srs(arcpy.GetParameterAsText(0))
+    epsglist = epsg_list_preprocess.list_check()
+    accept = False
+    for srs_code in epsglist:
+        epsg = "EPSG:" + str(srs_code)
+        if epsg == refsys[0]:
+            accept = True
+    if not accept:
+        raise Exception("incompatible epsg")
+    #if str(refsys[0]) == "EPSG:0":
+        #arcpy.AddMessage("You gave an %s\n" % refsys[0])
+        #return
+    #else:
+    #   url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str(refsys[0])
+     #  h = httplib2.Http()
+      # response, content = h.request(url, "GET", headers=headers)
+        #if response.status != 200:
+            #   arcpy.AddMessage("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
+            #  return
+        #else:
+            #   arcpy.AddMessage("works status code is %d\n%s" % (response.status, url))
+
+    arcpy.AddMessage(str(traceback.format_exc()))
+        #arcpy.AddMessage(codecs.__file__)
             
 
     # Clobber the log function to send everything to arcpy.AddMessage.
