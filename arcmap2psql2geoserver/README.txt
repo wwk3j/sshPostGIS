@@ -22,8 +22,6 @@ and change the script file source to where it is located.
 
 Features: 
 Facilitates the transferring of a shapefile from a PostGIS database to a GeoServer
-
-Known Issues:
  
 How to Use:
 Click the script tool and fill in accordingly the fields dealing with ArcMap first, then PostGis, and finally GeoServer. 
@@ -60,6 +58,11 @@ Workspace-the workspace for the geoserver
 Namespace-the namespace for the geoserver
 Note: allows having two things with the same name, but doesn't clash
 Datastore-the datastore name for the shapefile
+
+Upon populating all the fields, as long as * does not occur it should upload into the postgis database and then show up in geoserver.
+
+*Known Issues:
+in the main code block, you are essentially checking the incoming EPSG of the shapefile being loaded if this EPSG is not among the list of those in the epsg file, then the shapefile may need to be changed.
 
 Troubleshooting: 
 TBD
