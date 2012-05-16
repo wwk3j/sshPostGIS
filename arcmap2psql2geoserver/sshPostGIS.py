@@ -444,6 +444,7 @@ def main():
     refsys = get_srs(arcpy.GetParameterAsText(0))
     epsglist = epsg_list_preprocess.list_check()
     accept = False
+    arcpy.AddMessage("EPSG is %s" %refsys[0])
     for srs_code in epsglist:
         epsg = "EPSG:" + str(srs_code)
         if epsg == refsys[0]:

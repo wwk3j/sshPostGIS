@@ -8,7 +8,8 @@ from collections import defaultdict
 #file used to extract epsg codes 
 
 def list_check():
-    epsg_file_path = os.getcwd()
+    #epsg_file = os.path.join(os.path.dirname(__file__), 'epsg')
+    epsg_file_path = os.path.dirname(__file__)
     epsg_file_path += "/epsg"
     regex = re.compile("<(\d{4,5})>")
     epsg_list = []

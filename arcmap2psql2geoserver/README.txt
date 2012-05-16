@@ -18,9 +18,10 @@ http://postgis.refractions.net/documentation/manual-1.5/ch02.html#id2619431
 
 Installation Instructions:
 1. Unzip the file
-2. Open up ArcMap, go to the Catalog, right click and add toolbox by locating it where it is stored.
+2. Open up ArcMap, go to the Catalog, right click and add toolbox by locating it where it is stored. You can also drag 
+and drop the toolbox from the above directories. 
 3. Upon adding toolbox, right click the sshPostGIS_script and navigate to properties and click the source tab, 
-and change the script file source to where it is located.
+and change the script file source to where it is located. 
 4. Click apply and ok. 
 
 Features: 
