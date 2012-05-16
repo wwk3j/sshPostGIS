@@ -29,8 +29,6 @@ import psycopg2, psycopg2.extensions
 TRACE = False
 RUN = str(int(time.time()))
 
-#geoType = ""
-
 BoundingBox   = namedtuple('BoundingBox', 'xmin ymin xmax ymax')
 DbInfo        = namedtuple('DbInfo', 'host port database user password')
 GeoserverInfo = namedtuple('GeoserverInfo', 'base_url user password')
@@ -138,12 +136,7 @@ def pg_to_attribute(c, row, geometries):
         is_geom   = True
         for pair in geometries.items():
             arcpy.AddMessage('%r => %r' % pair)
-        #arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
-        #arcpy.AddMessage('col_name is %s' %(col_name)) 
-        #arcpy.AddMessage('type_name is %s' %(type_name))
     elif col_name in geometries:
-        #arcpy.AddMessage('attr_type %s' %(geometries.get(col_name)))
-        #arcpy.AddMessage('col_name is %s' %(col_name)) 
         arcpy.AddMessage('type_name is %s' %(type_name))
     return {
             'name'     : col_name,
@@ -225,13 +218,6 @@ def find_new_layer(layer_name):
         layer_name = base_name + '_' + str(n)
     return layer_name
 
-
-#@trace
-#def create_run_name(name):
- #   """This returns a name with the run ID appended. """
-  #  return name + '_' + RUN
-
-
 @trace
 def db_exists(cxn, db_name):
     """\
@@ -282,8 +268,6 @@ def geoValidate(featLayer):
     """This performs validation on the feature layer. """
     exList = []
     fields = arcpy.ListFields(featLayer, "", "String")
-
-    # Validate bounding box.
     extent = arcpy.Describe(featLayer).extent
     if extent.XMin > extent.XMax:
         exList.append('Invalid bounding box (X).')
@@ -328,8 +312,6 @@ def get_srs(layer):
     spatialRef = layer_descr.spatialReference
     spaRef = 'EPSG:%s' % (spatialRef.factoryCode,)
 
-    # use this for the native_crs xml
-    # first, figure out exactly which properties to use.
     native_crs = spatialRef.exportToString()
     if ";" in native_crs:
         native_crs = native_crs.split(";", 1)[0]
@@ -459,11 +441,6 @@ def main():
     export.
 
     """
-    
-    #check if the srs is applicable against the list of geoserver supported srs
-
-    #headers = { "Content-Type": "text/html; charset=utf-8","Accept": "text/html; charset=utf-8"}
-    #for srs in refsys:
     refsys = get_srs(arcpy.GetParameterAsText(0))
     epsglist = epsg_list_preprocess.list_check()
     accept = False
@@ -473,24 +450,7 @@ def main():
             accept = True
     if not accept:
         raise Exception("incompatible epsg")
-    #if str(refsys[0]) == "EPSG:0":
-        #arcpy.AddMessage("You gave an %s\n" % refsys[0])
-        #return
-    #else:
-    #   url = str(arcpy.GetParameter(6)) + "?wicket:bookmarkablePage=:org.geoserver.web.demo.SRSDescriptionPage&code=" + str(refsys[0])
-     #  h = httplib2.Http()
-      # response, content = h.request(url, "GET", headers=headers)
-        #if response.status != 200:
-            #   arcpy.AddMessage("Tried to make a GET request to %s but got a %d status code: \n%s" % (url, response.status, content))
-            #  return
-        #else:
-            #   arcpy.AddMessage("works status code is %d\n%s" % (response.status, url))
-
     arcpy.AddMessage(str(traceback.format_exc()))
-        #arcpy.AddMessage(codecs.__file__)
-            
-
-    # Clobber the log function to send everything to arcpy.AddMessage.
     global log
     log = arcpy_log
 
@@ -504,22 +464,15 @@ def main():
             password = arcpy.GetParameterAsText(5),
             )
         arcpy.AddMessage("Debug here tells if url is an issue")
-        #make sure url has http for http requests
         gs_info   = GeoserverInfo(
                 base_url = arcpy.GetParameterAsText(6),
-                #'http://geoserver.dev:8080/geoserver/web',
                 user = arcpy.GetParameterAsText(7),
-                #'admin',
                 password = arcpy.GetParameterAsText(8),
-                #'geoserver',
                 )
         data_info = DataInfo(
                 workspace = arcpy.GetParameterAsText(9),
                 namespace = arcpy.GetParameterAsText(10),
                 datastore = arcpy.GetParameterAsText(11),
-                #workspace = create_run_name(arcpy.GetParameterAsText(8)) or sshPostGISws,
-                #namespace = create_run_name(arcpy.GetParameterAsText(9)) or uri:uva.sshPostGIS,
-                #datastore = create_run_name(arcpy.GetParameterAsText(10))or sshPostGISds ,
                 )
         
         if not arcpy.Exists(featLayer):

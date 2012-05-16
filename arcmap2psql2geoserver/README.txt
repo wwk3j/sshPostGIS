@@ -13,6 +13,9 @@ System Prerequisites: ArcGIS 10 or above (therefore Windows XP and above), *GeoS
 *If geoserver and postgres are not installed, 
 the latest versions can be obtained here: http://workshops.opengeo.org/stack-intro/install-suite.html
 
+**Before running script, be sure to have created a template database named geodb as described:
+http://postgis.refractions.net/documentation/manual-1.5/ch02.html#id2619431
+
 Installation Instructions:
 1. Unzip the file
 2. Open up ArcMap, go to the Catalog, right click and add toolbox by locating it where it is stored.
@@ -54,6 +57,7 @@ Geoserver User-the username for the geoserver
 
 Geoserver Password-the password for the geoserver
 
+*Make sure Workspace, Namespace, and Datastore are all new upon each iteration of the script. 
 Workspace-the workspace for the geoserver
 Namespace-the namespace for the geoserver
 Note: allows having two things with the same name, but doesn't clash
