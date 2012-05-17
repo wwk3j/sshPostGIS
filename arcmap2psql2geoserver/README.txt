@@ -25,7 +25,8 @@ and change the script file source to where it is located.
 4. Click apply and ok. 
 
 Features: 
-Facilitates the transferring of a shapefile from a PostGIS database to a GeoServer via an ArcMap toolscript
+Facilitates the transferring of a shapefile from a PostGIS database to a GeoServer via an ArcMap toolscript with 
+epsg checking via an epsg list included derived from http://code.google.com/p/pyproj/source/browse/trunk/lib/pyproj/data/epsg. 
  
 How to Use:
 Click the script tool and fill in accordingly the fields dealing with ArcMap first, then PostGis, and finally GeoServer. 
@@ -72,4 +73,4 @@ Upon populating all the fields, as long as * does not occur it should upload int
 in the main code block, you are essentially checking the incoming EPSG of the shapefile being loaded if this EPSG is not among the list of those in the epsg file, then the shapefile may need to be changed.
 
 Troubleshooting: 
-TBD
+currently only compatible with geoserver 2.1.3 operated locally and executed remotely via geoserver url and default geoserver installation.
