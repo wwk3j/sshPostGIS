@@ -25,10 +25,12 @@ and change the script file source to where it is located.
 4. Click apply and ok. 
 
 Features: 
-Facilitates the transferring of a shapefile from a PostGIS database to a GeoServer
+Facilitates the transferring of a shapefile from a PostGIS database to a GeoServer via an ArcMap toolscript
  
 How to Use:
 Click the script tool and fill in accordingly the fields dealing with ArcMap first, then PostGis, and finally GeoServer. 
+***Make sure to follow standard naming procedure of ArcMap (i.e. no spaces, no punctuation, starting with a letter, etc.)
+
 
 Shapefile-a shapefile currently open within the table of contents or what is known as a layer panel 
 Note: 
